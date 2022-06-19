@@ -1,0 +1,7 @@
+# This is a place to include all external libraries
+# as code dependencies
+
+if (BUILD_TESTS)
+    message("Tests are enabled. Adding doctest")
+    add_subdirectory(doctest)
+endif()

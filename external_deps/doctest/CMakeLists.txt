@@ -1,0 +1,15 @@
+option(GB_WITH_SYSTEM_DOCTEST "Turns on/off if system installed doctest should be used instead of the provided one" OFF)
+
+if (GB_WITH_SYSTEM_DOCTEST)
+    find_package(doctest QUIET)
+endif()
+
+if(NOT TARGET doctest::doctest)
+    if (GB_WITH_SYSTEM_DOCTEST)
+        message(WARNING "doctest library is not installed. Fix path or set GB_WITH_SYSTEM_DOCTEST=ON and rerun cmake.")
+    endif()
+    message(STATUS "Using current doctest")
+    add_library(doctest INTERFACE)
+    target_include_directories(doctest SYSTEM INTERFACE include/)
+    add_library(doctest::doctest ALIAS doctest)
+endif()

@@ -6,6 +6,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/" ${CMAKE_MODULE_PATH})
 
 include(ccache)
 include(setup_project)
+include(test_utils)
+if (BUILD_TESTS)
+    # required to enable ctest support
+    enable_testing()
+endif()
 
 add_compile_options( "-Werror" "-Wall" "-Wpedantic" "-Wextra")
 
@@ -13,8 +18,11 @@ option(DEV_USE_CCACHE "If enabled, tries to find ccache program and use it to sp
 find_package(OpenCV 4 REQUIRED core video imgproc objdetect dnn highgui)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
+add_subdirectory(external_deps)
+
 add_subdirectory(grabcut)
 add_subdirectory(apps EXCLUDE_FROM_ALL)
-
-
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
