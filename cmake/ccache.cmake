@@ -1,0 +1,11 @@
+# ccache is useful to speed up recompilation
+if(DEV_USE_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        message(STATUS "Looking for ccache - found (${CCACHE_PROGRAM})")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "${CCACHE_PROGRAM}")
+    else()
+        message(STATUS "Looking for ccache - not found")
+    endif()
+endif()
