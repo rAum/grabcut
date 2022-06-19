@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 project(grabcut VERSION 0.0.0 LANGUAGES CXX)
 
 # extend module path with local module/ directory

@@ -1,0 +1,21 @@
+name: Build project
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+  # Allows to workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - name "Run cmake setup for DEBUG build":
+        run: cmake -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build DEBUG
+        run: cmake --build build -j
+      - name: Run tests
+        run: cd build && ctest -vv -j --progress
