@@ -1,0 +1,1 @@
+add_executable(run_grabcut run_grabcut.cpp)
