@@ -13,8 +13,8 @@ if (BUILD_TESTS)
 endif()
 
 option(DEV_USE_CCACHE "If enabled, tries to find ccache program and use it to speedup recompilation" ON)
-find_package(OpenCV 4 REQUIRED core video imgproc objdetect dnn highgui)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(OpenCV 4 REQUIRED core imgproc highgui)
+include(eigen_importer)
 
 add_subdirectory(external_deps)
 
