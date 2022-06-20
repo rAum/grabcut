@@ -7,6 +7,7 @@ function (cpp_test NAME SOURCES)
     target_link_libraries(${TEST_NAME} doctest::doctest)
     add_test(${TEST_NAME} ${TEST_NAME})
     target_compile_definitions(${TEST_NAME} PRIVATE TESTDATA_DIR="${CMAKE_SOURCE_DIR}/tests/data" DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
+    enable_project_settings(${TEST_NAME})
 endfunction()
 else()
     # if no testing, just stub the cmake function

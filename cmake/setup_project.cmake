@@ -14,3 +14,7 @@ endif()
 if (TRUE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
 endif()
+
+function(enable_project_settings Target)
+    target_compile_options(${Target} PRIVATE "-Werror" "-Wall" "-Wpedantic" "-Wextra" "-Wno-unused-parameter")
+endfunction()
