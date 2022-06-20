@@ -5,3 +5,5 @@ if (BUILD_TESTS)
     message("Tests are enabled. Adding doctest")
     add_subdirectory(doctest)
 endif()
+
+add_subdirectory(maxflow)
