@@ -1,1 +1,7 @@
-add_executable(run_grabcut run_grabcut.cpp)
+set(APP run_grabcut)
+
+add_executable(${APP} run_grabcut.cpp)
+target_include_directories(${APP} PRIVATE SYSTEM ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${APP} PRIVATE ${OpenCV_LIBS})
+
+unset(APP)

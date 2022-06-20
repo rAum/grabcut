@@ -12,7 +12,7 @@ if (BUILD_TESTS)
     enable_testing()
 endif()
 
-add_compile_options( "-Werror" "-Wall" "-Wpedantic" "-Wextra")
+add_compile_options( "-Werror" "-Wall" "-Wpedantic" "-Wextra" "-Wno-unused-parameter")
 
 option(DEV_USE_CCACHE "If enabled, tries to find ccache program and use it to speedup recompilation" ON)
 find_package(OpenCV 4 REQUIRED core video imgproc objdetect dnn highgui)
