@@ -7,19 +7,46 @@
 namespace gmm {
 
 /**
- * This class is a way to online precompute mean & covariance matrix
+ * This class is a way to online precompute mean & covariance matrix/
+  * @tparam T numeric type for values
+ * @tparam DIM dimension size
  */
+template<class T, int DIM=3>
 class MeanCovariancePrecompute {
 public:
+    using MatT = Eigen::Matrix<T, DIM, DIM>;
+    using VecT = Eigen::Matrix<T, DIM, 1>;
+
     /***
      * adds new observation to the set
      * @param value input vector / scalar
      */
-    void add(const Eigen::Vector3d& value) noexcept {
+    void add(const VecT& value) noexcept {
         sum_ += value;
-        Eigen::Matrix3d product = value * value.transpose();
-        prod_ += product;
+        prod_ += value * value.transpose();
         ++n_;
+    }
+
+    /**
+     * Adds multiple values by inserting 3 x N matrix
+     * @param values mmatrix to be inserted
+     */
+    template<int Cols>
+    void add(const Eigen::Matrix<T, DIM, Cols>& values) noexcept {
+        sum_ += values.rowwise().sum();
+        prod_ += values * values.transpose();
+        n_ += values.cols();
+    }
+
+    /***
+     * Adds a single elment as sequence of values (in number equal to dimension)
+     * @tparam V variadic sequence of numeric values
+     * @param v a value
+     */
+    template<class ...V>
+    void add(V... v) noexcept {
+        static_assert(sizeof...(V) == DIM, "Only defined if dimensions match");
+        add(Eigen::Matrix<T, sizeof...(V), 1>{v..., });
     }
 
     /**
@@ -28,6 +55,15 @@ public:
      */
     [[nodiscard]]
     std::size_t size() const noexcept { return n_; }
+
+    /**
+     *  Clears all values (sets everything to zero)
+     */
+    void clear() noexcept {
+        prod_ = MatT::Zero();
+        sum_ = VecT::Zero();
+        n_ = 0;
+    }
 
     /**
      * Calculates mean value
@@ -54,9 +90,10 @@ public:
     }
 
 private:
-    Eigen::Vector3d sum_ = Eigen::Vector3d::Zero();
-    Eigen::Matrix3d prod_ = Eigen::Matrix3d::Zero();
+    MatT prod_ = MatT::Zero();
+    VecT sum_ = VecT::Zero();
     std::size_t n_ = 0;
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

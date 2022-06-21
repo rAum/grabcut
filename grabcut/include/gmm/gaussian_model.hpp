@@ -19,11 +19,12 @@ struct GaussianModel {
     T determinant;
 
     T probability_density(const Eigen::Matrix<T, DIM, 1>& v) const noexcept {
+        const T pip = std::pow(M_PI, DIM);
         double probability_density(0.);
         if (determinant > 0) {
             auto diff = v - mean;
             double distribution = diff.dot((inverse * diff));
-            probability_density = std::exp(-0.5 * distribution) / std::sqrt(determinant);
+            probability_density = std::exp(-0.5 * distribution) / std::sqrt(pip * determinant);
         }
         return probability_density;
     }
