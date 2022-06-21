@@ -8,3 +8,4 @@ endif()
 
 add_subdirectory(maxflow)
 add_subdirectory(stb)
+add_subdirectory(corrade_lean)
