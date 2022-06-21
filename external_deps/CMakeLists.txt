@@ -7,3 +7,4 @@ if (BUILD_TESTS)
 endif()
 
 add_subdirectory(maxflow)
+add_subdirectory(stb)
