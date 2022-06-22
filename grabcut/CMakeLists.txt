@@ -1,7 +1,6 @@
 
 add_library(grabcut
         src/grabcut.cpp
-        src/gmm/gaussian_mixture_model.cpp
         )
 
 target_link_libraries(grabcut PRIVATE

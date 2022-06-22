@@ -8,26 +8,72 @@
 
 namespace gmm {
 
+template<class T>
+constexpr T clamp(T a, T min, T max) noexcept {
+    return  a < min? min : (a > max? max : a);
+}
+
 /***
  * Models mixture of gaussians (GMM)
  */
+template<class T, int DIM>
 class GaussianMixtureModel {
 public:
-    explicit GaussianMixtureModel(unsigned k_mixtures);
+    using GaussianT = GaussianModel<T, DIM>;
+
+    GaussianMixtureModel() = default;
+
+    GaussianMixtureModel(std::initializer_list<const GaussianT&> &list)
+    : mixture_(list) {}
 
     [[nodiscard]]
-    constexpr unsigned get_count() const noexcept { return k_mixtures_; }
+    std::size_t size() const noexcept { return mixture_.size(); }
 
     [[nodiscard]]
-    double probability(const Eigen::Vector3f& vector) const noexcept;
+    bool empty() const noexcept { return mixture_.empty(); }
+
+    void add(GaussianT&& gaussian) {
+        mixture_.template emplace_back(gaussian);
+    }
+
+    void remove(unsigned k) {
+        if (k < mixture_.size())
+            mixture_.erase(mixture_.begin() + k);
+    }
 
     [[nodiscard]]
-    double probability_given_k(const Eigen::Vector3f& vec, unsigned k) const noexcept;
+    T probability(const typename GaussianT::VecT & vec) const noexcept {
+        T total_probability(0.);
+
+        for (const auto& gaussian : mixture_) {
+            if (gaussian.a_priori_weight > 0)
+                total_probability += gaussian.a_priori_weight * gaussian.probability_density(vec);
+        }
+        return clamp(total_probability, 0., 1.);
+    }
+
+    [[nodiscard]]
+    T probability_given_k(const typename GaussianT::VecT & vec, unsigned k) const noexcept {
+        T probability_density(0.);
+        if (k < mixture_.size())
+            probability_density = mixture_[k].probability_density(vec);
+        return probability_density;
+    }
+
+    const GaussianT& operator[](unsigned k) const {
+        return mixture_.at(k);
+    }
+
+    [[nodiscard]]
+    T a_priori_weight_given_k(unsigned k) const noexcept {
+        T a_priori(0.);
+        if (k < mixture_.size())
+            a_priori = mixture_[k].a_priori_weight;
+        return a_priori;
+    }
 
 private:
-    const unsigned k_mixtures_;
-    std::vector<GaussianModel<float, 3>> mixture_;
-    std::vector<float> gaussian_weight_;
+    std::vector<GaussianT> mixture_;
 };
 
 } // namespace gmm

@@ -11,12 +11,16 @@ namespace gmm {
  */
 template<class T, unsigned DIM=3>
 struct GaussianModel {
-    Eigen::Matrix<T, DIM, DIM> covariance;
-    Eigen::Matrix<T, DIM, DIM> inverse;
-    Eigen::Matrix<T, DIM, DIM> eigenvectors;
-    Eigen::Matrix<T, DIM, 1> mean;
-    Eigen::Matrix<T, DIM, 1> eigenvalues;
-    T determinant;
+    using VecT = Eigen::Matrix<T, DIM, 1>;
+    using MatT = Eigen::Matrix<T, DIM, DIM>;
+
+    MatT covariance;
+    MatT inverse;
+    MatT eigenvectors;
+    VecT mean;
+    VecT eigenvalues;
+    T determinant = T(0);
+    T a_priori_weight = T(0);
 
     T probability_density(const Eigen::Matrix<T, DIM, 1>& v) const noexcept {
         const T pip = std::pow(M_PI, DIM);
