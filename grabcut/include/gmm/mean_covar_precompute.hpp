@@ -11,7 +11,7 @@ namespace gmm {
   * @tparam T numeric type for values
  * @tparam DIM dimension size
  */
-template<class T, int DIM=3>
+template<class T, unsigned DIM=3>
 class MeanCovariancePrecompute {
 public:
     using MatT = Eigen::Matrix<T, DIM, DIM>;

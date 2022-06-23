@@ -18,7 +18,7 @@ namespace gmm {
  * @param total_samples total number of observations
  * @return ratio between total samples and points in mean_cov
  */
-template<class T, int DIM>
+template<class T, unsigned DIM>
 double build_gaussian(gmm::GaussianModel<T, DIM> &gaussian, const gmm::MeanCovariancePrecompute<T, DIM>& mean_cov, unsigned total_samples) noexcept {
     static_assert(DIM > 0, "Dimension size must be at least 1");
 

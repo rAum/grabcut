@@ -16,9 +16,11 @@ constexpr T clamp(T a, T min, T max) noexcept {
 /***
  * Models mixture of gaussians (GMM)
  */
-template<class T, int DIM>
+template<class T, unsigned DIM>
 class GaussianMixtureModel {
 public:
+    static_assert(DIM > 0, "At least dim must be 1");
+
     using GaussianT = GaussianModel<T, DIM>;
 
     GaussianMixtureModel() = default;
