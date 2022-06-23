@@ -1,2 +1,8 @@
 
 cpp_test(sanity sanity.cpp)
+
+cpp_test(gmm_gaussian gmm_gaussian.cpp)
+target_link_libraries(test_gmm_gaussian PRIVATE grabcut Eigen3::Eigen)
+
+cpp_test(gmm_mean_covar_precompute test_gmm_mv_precompute.cpp)
+target_link_libraries(test_gmm_mean_covar_precompute PRIVATE grabcut Eigen3::Eigen)

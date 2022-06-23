@@ -1,11 +1,18 @@
+
 add_library(grabcut
         src/grabcut.cpp
         )
 
 target_link_libraries(grabcut PRIVATE
         ${OpenCV_LIBRARIES}
+        Eigen3::Eigen
         )
 target_compile_definitions(grabcut PUBLIC GRABCUT_VERSION="${PROJECT_VERSION}")
+target_include_directories(grabcut PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+        $<INSTALL_INTERFACE:include/>
+        )
+target_include_directories(grabcut PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include/>)
 
 set_property(TARGET grabcut PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET grabcut PROPERTY VISIBILITY_INLINES_HIDDEN ON)
