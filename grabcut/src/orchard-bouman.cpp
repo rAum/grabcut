@@ -1,4 +1,4 @@
-#include <quantization/orchard-bauman.h>
+#include <quantization/orchard-bouman.h>
 
 #include <gmm/mean_covar_precompute.hpp>
 #include <gmm/gaussian_mixture_model.hpp>
