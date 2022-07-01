@@ -38,6 +38,14 @@ public:
         mixture_.template emplace_back(gaussian);
     }
 
+    auto max_variance_gaussian_index() const noexcept {
+        int i = 0;
+        auto it = std::max_element(mixture_.begin(), mixture_.end(), [](const auto& a, const auto& b) {
+           return a.eigenvalues[0] < b.eigenvalues[0];
+        });
+        return std::distance(mixture_.begin(), it);
+    }
+
     void remove(unsigned k) {
         if (k < mixture_.size())
             mixture_.erase(mixture_.begin() + k);
@@ -66,6 +74,10 @@ public:
         return mixture_.at(k);
     }
 
+    GaussianT& operator[](unsigned k) {
+        return mixture_.at(k);
+    }
+
     [[nodiscard]]
     T a_priori_weight_given_k(unsigned k) const noexcept {
         T a_priori(0.);
@@ -76,6 +88,11 @@ public:
 
 private:
     std::vector<GaussianT> mixture_;
+};
+
+struct FgBgGMM {
+    GaussianMixtureModel<float, 3> fg;
+    GaussianMixtureModel<float, 3> bg;
 };
 
 } // namespace gmm

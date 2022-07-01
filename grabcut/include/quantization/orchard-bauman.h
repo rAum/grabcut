@@ -3,8 +3,8 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
 #include <stdexcept>
+#include <vector>
 
 struct Shape {
     int width, height, channels;
@@ -13,7 +13,7 @@ struct Shape {
 
 namespace quantization {
 
-void quantize(const std::uint8_t* data, const Shape& shape);
+std::vector<std::uint8_t> quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask);
 
 } // namespace quantization
 
