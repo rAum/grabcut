@@ -7,6 +7,7 @@
 #include <cstdio>
 
 #include <quantization/orchard-bouman.h>
+#include <gmm/quantization_model.hpp>
 
 auto data_dir = std::string(TESTDATA_DIR);
 
@@ -36,11 +37,12 @@ TEST_CASE("Quantize image") {
     CHECK_EQ(shape.height, 547);
     CHECK_EQ(shape.channels, 3);
 
-    auto result = quantization::quantize(img.get(), shape, mask.get());
+    QuantizationModel result;
+    quantization::quantize(img.get(), shape, mask.get(), result);
 
-    for (auto& r : result) {
+    for (auto& r : result.component_map) {
         r *= 255 / 5;
     }
 
-    stbi_write_png("quantized.png", shape.width, shape.height, 1, result.data(), stride);
+    stbi_write_png("quantized.png", shape.width, shape.height, 1, result.component_map.data(), stride);
 }

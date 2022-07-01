@@ -34,6 +34,10 @@ public:
     [[nodiscard]]
     bool empty() const noexcept { return mixture_.empty(); }
 
+    void clear() noexcept {
+        mixture_.clear();
+    }
+
     void add(GaussianT&& gaussian) {
         mixture_.template emplace_back(gaussian);
     }
@@ -41,7 +45,7 @@ public:
     auto max_variance_gaussian_index() const noexcept {
         int i = 0;
         auto it = std::max_element(mixture_.begin(), mixture_.end(), [](const auto& a, const auto& b) {
-           return a.eigenvalues[0] < b.eigenvalues[0];
+           return a.eigenvalues[2] < b.eigenvalues[2];
         });
         return std::distance(mixture_.begin(), it);
     }

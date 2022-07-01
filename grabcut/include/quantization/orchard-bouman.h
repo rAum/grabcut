@@ -11,9 +11,11 @@ struct Shape {
     int stride;
 };
 
+struct QuantizationModel;
+
 namespace quantization {
 
-std::vector<std::uint8_t> quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask);
+void quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask, QuantizationModel& result);
 
 } // namespace quantization
 

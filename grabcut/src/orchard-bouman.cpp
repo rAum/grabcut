@@ -3,6 +3,7 @@
 #include <gmm/mean_covar_precompute.hpp>
 #include <gmm/gaussian_mixture_model.hpp>
 #include <gmm/build_gaussian.hpp>
+#include <gmm/quantization_model.hpp>
 
 #include <grabcut/trimap.hpp>
 
@@ -48,15 +49,9 @@ struct DynamicGaussianComponent {
     }
 };
 
-struct ForegroundBackgroundDynamicGMM {
-    std::array<std::vector<DynamicGaussianComponent>, 2> gmm;
-    std::array<int, 2> strongest_k;
-    std::vector<std::uint8_t> component_map;
-};
-
-void grow_gmm(const uint8_t *data, const Shape &shape, const uint8_t *mask_data,
-              std::vector<DynamicGaussianComponent> &fg_gmm, std::vector<DynamicGaussianComponent> &bg_gmm,
-              std::vector<std::uint8_t> &gmm_component_map, int fg_id, int bg_id, int k) {
+void split_biggest_gaussian(const uint8_t *data, const Shape &shape, const uint8_t *mask_data,
+                            std::vector<DynamicGaussianComponent> &fg_gmm, std::vector<DynamicGaussianComponent> &bg_gmm,
+                            std::vector<std::uint8_t> &gmm_component_map, int fg_id, int bg_id, int k) {
     constexpr float to_zero_one = 1.f / 255.f;
 
     const auto& fg = fg_gmm[fg_id].gaussian;
@@ -98,7 +93,7 @@ void grow_gmm(const uint8_t *data, const Shape &shape, const uint8_t *mask_data,
     }
 }
 
-std::vector<std::uint8_t> quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask_data) {
+void quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask_data, QuantizationModel& result) {
     constexpr int max_k = 5;
     std::vector<DynamicGaussianComponent> fg_gmm, bg_gmm;
     fg_gmm.emplace_back();
@@ -143,7 +138,7 @@ std::vector<std::uint8_t> quantize(const std::uint8_t* data, const Shape& shape,
     auto bg_id = 0;
     // TODO: probably can be rewritten to be more effective
     for (int k = 0; k < max_k; ++k) {
-        grow_gmm(data, shape, mask_data, fg_gmm, bg_gmm, gmm_component_map, fg_id, bg_id, k);
+        split_biggest_gaussian(data, shape, mask_data, fg_gmm, bg_gmm, gmm_component_map, fg_id, bg_id, k);
         // find the highest variance (highest eigenvalue) component to split more
         for (int i=0; i<k; ++i) {
             if (fg_gmm[fg_id].max_eigenvalue() < fg_gmm[i].max_eigenvalue()) {
@@ -155,14 +150,20 @@ std::vector<std::uint8_t> quantize(const std::uint8_t* data, const Shape& shape,
         }
     }
 
-//    gmm::GaussianMixtureModel<float, 3> final_fg_gmm;
-//    gmm::GaussianMixtureModel<float, 3> final_bg_gmm;
-//
-//    for (int i = 0; i < max_k; ++i) {
-//        final_fg_gmm.add(std::move(fg_gmm[i].gaussian));
-//        final_bg_gmm.add(std::move(bg_gmm[i].gaussian));
-//    }
-    return gmm_component_map;
+    result.strongest_k[0] = fg_id;
+    result.strongest_k[1] = bg_id;
+    result.component_map = std::move(gmm_component_map);
+
+    gmm::GaussianMixtureModel<float, 3>& final_fg_gmm = result.gmm[0];
+    gmm::GaussianMixtureModel<float, 3>& final_bg_gmm = result.gmm[1];
+
+    final_fg_gmm.clear();
+    final_bg_gmm.clear();
+
+    for (int i = 0; i < max_k; ++i) {
+        final_fg_gmm.add(std::move(fg_gmm[i].gaussian));
+        final_bg_gmm.add(std::move(bg_gmm[i].gaussian));
+    }
 }
 
 } // namespace quantization
