@@ -1,5 +1,6 @@
 
 add_library(grabcut
+        src/orchard-bouman.cpp
         src/grabcut.cpp
         )
 
