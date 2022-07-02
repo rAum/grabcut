@@ -7,7 +7,7 @@
 #include <cstdio>
 
 #include <quantization/orchard-bouman.h>
-#include <gmm/quantization_model.hpp>
+#include <quantization/quantization_model.hpp>
 
 auto data_dir = std::string(TESTDATA_DIR);
 
@@ -40,9 +40,15 @@ TEST_CASE("Quantize image") {
     QuantizationModel result;
     quantization::quantize(img.get(), shape, mask.get(), result);
 
+    bool all_valid = true;
     for (auto& r : result.component_map) {
+        bool valid_range = r <= 4;
+        if (not valid_range) {
+            all_valid = false;
+        }
         r *= 255 / 5;
     }
+    CHECK_MESSAGE(all_valid, "Wrong number of components");
 
     stbi_write_png("quantized.png", shape.width, shape.height, 1, result.component_map.data(), stride);
 }

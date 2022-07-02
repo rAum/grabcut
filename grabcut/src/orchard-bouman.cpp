@@ -3,7 +3,7 @@
 #include <gmm/mean_covar_precompute.hpp>
 #include <gmm/gaussian_mixture_model.hpp>
 #include <gmm/build_gaussian.hpp>
-#include <gmm/quantization_model.hpp>
+#include "quantization/quantization_model.hpp"
 
 #include <grabcut/trimap.hpp>
 
