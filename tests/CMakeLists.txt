@@ -9,3 +9,6 @@ target_link_libraries(test_gmm_mean_covar_precompute PRIVATE grabcut Eigen3::Eig
 
 cpp_test(quantize test_quantize.cpp)
 target_link_libraries(test_quantize PRIVATE grabcut Eigen3::Eigen stb_utils)
+
+cpp_test(grabcut test_grabcut.cpp)
+target_link_libraries(test_grabcut PRIVATE grabcut stb_utils)
