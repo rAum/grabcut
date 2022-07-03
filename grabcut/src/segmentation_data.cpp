@@ -2,7 +2,7 @@
 
 namespace grabcut {
 
-void SegmentationData::init_from(Shape _shape, std::uint8_t *mask) {
+void SegmentationData::init_from(Shape _shape, const std::uint8_t *mask) {
     shape = _shape;
     segmap.clear();
     trimap.clear();
@@ -20,7 +20,7 @@ void SegmentationData::init_from(Shape _shape, std::uint8_t *mask) {
     }
 }
 
-std::vector<std::uint8_t> SegmentationData::make_rgba(std::uint8_t* color, std::uint8_t novalue, std::uint8_t value) const {
+std::vector<std::uint8_t> SegmentationData::make_rgba(const std::uint8_t* color, std::uint8_t novalue, std::uint8_t value) const {
     std::vector<std::uint8_t> result(segmap.size() * 4);
     auto seg = segmap.data();
     for (auto out = result.data(); out != result.data() + result.size(); out += 4) {
