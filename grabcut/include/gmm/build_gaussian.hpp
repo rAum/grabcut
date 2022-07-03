@@ -19,15 +19,13 @@ namespace gmm {
  * @return ratio between total samples and points in mean_cov
  */
 template<class T, unsigned DIM>
-double build_gaussian(gmm::GaussianModel<T, DIM> &gaussian, const gmm::MeanCovariancePrecompute<T, DIM>& mean_cov, unsigned total_samples) noexcept {
+void build_gaussian(gmm::GaussianModel<T, DIM> &gaussian, const gmm::MeanCovariancePrecompute<T, DIM>& mean_cov, unsigned total_samples) noexcept {
     static_assert(DIM > 0, "Dimension size must be at least 1");
 
-    double gaussian_weight = 0.;
-    if (mean_cov.size() == 0) {
-        return gaussian_weight;
+    gaussian.a_priori_weight = 0;
+    if (mean_cov.size() != 0) {
+        gaussian.a_priori_weight = mean_cov.size() / decltype(gaussian.a_priori_weight)(total_samples);
     }
-    gaussian_weight = mean_cov.size() / total_samples;
-
     gaussian.mean = mean_cov.get_mean();
     gaussian.covariance = mean_cov.get_covariance();
     gaussian.determinant = gaussian.covariance.determinant();
@@ -36,8 +34,6 @@ double build_gaussian(gmm::GaussianModel<T, DIM> &gaussian, const gmm::MeanCovar
     Eigen::SelfAdjointEigenSolver<decltype(gaussian.covariance)> solver(gaussian.covariance);
     gaussian.eigenvectors = solver.eigenvectors();
     gaussian.eigenvalues = solver.eigenvalues();
-
-    return gaussian_weight;
 }
 
 }  // namespace gmm

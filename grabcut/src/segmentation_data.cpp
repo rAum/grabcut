@@ -4,6 +4,8 @@ namespace grabcut {
 
 void SegmentationData::init_from(Shape _shape, std::uint8_t *mask) {
     shape = _shape;
+    segmap.clear();
+    trimap.clear();
     segmap.resize(shape.size(), Trimap::Background);
     trimap.resize(shape.size(), Trimap::Unknown);
 

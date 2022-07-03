@@ -42,6 +42,7 @@ public:
         mixture_.template emplace_back(gaussian);
     }
 
+    [[nodiscard]]
     auto max_variance_gaussian_index() const noexcept {
         int i = 0;
         auto it = std::max_element(mixture_.begin(), mixture_.end(), [](const auto& a, const auto& b) {
@@ -57,13 +58,17 @@ public:
 
     [[nodiscard]]
     T probability(const typename GaussianT::VecT & vec) const noexcept {
-        T total_probability(0.);
-
+        T total_probability(0);
+        T total_weights(0);
         for (const auto& gaussian : mixture_) {
-            if (gaussian.a_priori_weight > 0)
+            if (gaussian.a_priori_weight > 0) {
                 total_probability += gaussian.a_priori_weight * gaussian.probability_density(vec);
+                total_weights += gaussian.a_priori_weight;
+            }
         }
-        return clamp(total_probability, 0., 1.);
+        //FXIME: investigate why sum(total_weights) != 1
+        if (total_weights == 0) return 0;
+        return total_probability / total_weights; // clamp(total_probability / total_weights, T(0), T(1));
     }
 
     [[nodiscard]]

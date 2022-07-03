@@ -40,8 +40,8 @@ struct DynamicGaussianComponent {
         return *this;
     }
 
-    DynamicGaussianComponent& update() {
-        gmm::build_gaussian(gaussian, data, data.size());
+    DynamicGaussianComponent& update(int size = -1) {
+        gmm::build_gaussian(gaussian, data, size < 0? data.size() : size);
         return *this;
     }
 
@@ -88,10 +88,19 @@ void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, co
         ++mask_curr;
     }
 
-    for (auto idx : {k, fg_id}) {
-        fg_gmm[idx].update().clear_data();
-        bg_gmm[idx].update().clear_data();
+    auto total_fg(0);
+    for (auto& fg : fg_gmm) {
+        total_fg += fg.size();
     }
+    fg_gmm[k].update(total_fg).clear_data();
+    fg_gmm[fg_id].update(total_fg).clear_data();
+
+    auto total_bg(0);
+    for (auto& bg : bg_gmm) {
+        total_bg += bg.size();
+    }
+    bg_gmm[k].update(total_bg).clear_data();
+    bg_gmm[bg_id].update(total_bg).clear_data();
 }
 
 void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::uint8_t* mask_data, QuantizationModel& result) {

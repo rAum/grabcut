@@ -19,7 +19,9 @@ TEST_CASE("GMM Gaussian test") {
         data.add({1., 0.});
         data.add({0., 1.});
 
-        gmm::build_gaussian(model, data, data.size() + 2);
+        gmm::build_gaussian(model, data, data.size());
+
+        CHECK_EQ(model.a_priori_weight, 1.0);
 
         auto mean = data.get_mean();
         auto mean_density = model.probability_density(mean);
