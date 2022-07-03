@@ -4,6 +4,7 @@
 #include <gmm/gaussian_mixture_model.hpp>
 #include <gmm/build_gaussian.hpp>
 #include "quantization/quantization_model.hpp"
+#include <grabcut/segmentation_data.h>
 
 #include <grabcut/trimap.hpp>
 
@@ -11,7 +12,7 @@
 
 namespace quantization {
 
-std::unique_ptr<float[]> to_float(const std::uint8_t*data, const Shape& shape) {
+std::unique_ptr<float[]> to_float(const std::uint8_t*data, const grabcut::Shape& shape) {
     const int total_values = shape.width * shape.height * shape.channels;
     const std::uint8_t* curr = data;
     const std::uint8_t* end = data + (shape.width * shape.height * shape.channels);
@@ -49,7 +50,7 @@ struct DynamicGaussianComponent {
     }
 };
 
-void split_biggest_gaussian(const uint8_t *data, const Shape &shape, const uint8_t *mask_data,
+void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, const uint8_t *mask_data,
                             std::vector<DynamicGaussianComponent> &fg_gmm, std::vector<DynamicGaussianComponent> &bg_gmm,
                             std::vector<std::uint8_t> &gmm_component_map, int fg_id, int bg_id, int k) {
     constexpr float to_zero_one = 1.f / 255.f;
@@ -93,7 +94,7 @@ void split_biggest_gaussian(const uint8_t *data, const Shape &shape, const uint8
     }
 }
 
-void quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask_data, QuantizationModel& result) {
+void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::uint8_t* mask_data, QuantizationModel& result) {
     constexpr int max_k = 5;
     std::vector<DynamicGaussianComponent> fg_gmm, bg_gmm;
     fg_gmm.emplace_back();

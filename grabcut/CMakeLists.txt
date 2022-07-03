@@ -2,6 +2,7 @@
 add_library(grabcut
         src/orchard-bouman.cpp
         src/grabcut.cpp
+        src/segmentation_data.cpp
         )
 
 target_link_libraries(grabcut PRIVATE

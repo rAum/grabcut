@@ -6,16 +6,15 @@
 #include <stdexcept>
 #include <vector>
 
-struct Shape {
-    int width, height, channels;
-    int stride;
-};
+namespace grabcut {
+struct Shape;
+}  // namespace grabcut
 
 struct QuantizationModel;
 
 namespace quantization {
 
-void quantize(const std::uint8_t* data, const Shape& shape, const std::uint8_t* mask, QuantizationModel& result);
+void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::uint8_t* mask, QuantizationModel& result);
 
 } // namespace quantization
 

@@ -5,9 +5,9 @@
 namespace grabcut {
 
 enum Trimap : std::uint8_t {
-    Background,
-    Foreground,
-    Unknown,
+    Background = 0,
+    Foreground = 1,
+    Unknown = 2,
 };
 
 }  // namespace grabcut
