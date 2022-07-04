@@ -29,10 +29,12 @@ struct Grabcut::GbData {
         auto out = segmentation.segmap.data();
         constexpr float to_zero_one = 1.f/255.f;
         for(auto rgb=image; rgb != image + shape.chsize(); rgb += 3, out += 1) {
-            Eigen::Vector3f color{rgb[0] * to_zero_one, rgb[1] * to_zero_one, rgb[2] * to_zero_one};
-            auto fg = color_model.gmm[0].probability(color);
-            auto bg = color_model.gmm[1].probability(color);
-            *out = fg > bg? Trimap::Foreground : Trimap::Background;
+            if (*out == Trimap::Foreground) {
+                Eigen::Vector3f color{rgb[0] * to_zero_one, rgb[1] * to_zero_one, rgb[2] * to_zero_one};
+                auto fg = color_model.gmm[0].probability(color);
+                auto bg = color_model.gmm[1].probability(color);
+                *out = fg > bg ? Trimap::Foreground : Trimap::Background;
+            }
         }
 
     }
