@@ -39,7 +39,7 @@ TEST_CASE("Test grabcut implementation") {
         grabcut.init(img.get(), mask.get(), width, height, channels);
         auto rgba = grabcut.get_result();
         CHECK_EQ(rgba.size(), width * height * 4);
-        stbi_write_png("grab_postinit.png", width, height, 4, rgba.data(), width * 4);
+        stbi_write_png("grab_0.png", width, height, 4, rgba.data(), width * 4);
         std::vector<std::uint8_t> res_mask = grabcut.get_mask();
         CHECK_EQ(res_mask.size(), width * height);
         for (auto& m : res_mask) m *= 255;
@@ -49,7 +49,7 @@ TEST_CASE("Test grabcut implementation") {
             grabcut.run();
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
-            stbi_write_png("grab_onestep.png", width, height, 4, rgba.data(), width * 4);
+            stbi_write_png("grab_1.png", width, height, 4, rgba.data(), width * 4);
             res_mask = grabcut.get_mask();
             CHECK_EQ(res_mask.size(), width * height);
             for (auto& m : res_mask) m *= 255;
@@ -60,7 +60,7 @@ TEST_CASE("Test grabcut implementation") {
             grabcut.run(2);
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
-            stbi_write_png("grab_twostep.png", width, height, 4, rgba.data(), width * 4);
+            stbi_write_png("grab_2.png", width, height, 4, rgba.data(), width * 4);
             res_mask = grabcut.get_mask();
             CHECK_EQ(res_mask.size(), width * height);
             for (auto& m : res_mask) m *= 255;
@@ -71,11 +71,22 @@ TEST_CASE("Test grabcut implementation") {
             grabcut.run(5);
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
-            stbi_write_png("grab_nstep.png", width, height, 4, rgba.data(), width * 4);
+            stbi_write_png("grab_5.png", width, height, 4, rgba.data(), width * 4);
             res_mask = grabcut.get_mask();
             CHECK_EQ(res_mask.size(), width * height);
             for (auto& m : res_mask) m *= 255;
-            stbi_write_png("grab_nstep_mask.png", width, height, 1, res_mask.data(), width);
+            stbi_write_png("grab_fivestep_mask.png", width, height, 1, res_mask.data(), width);
+        }
+
+        SUBCASE("Run 10 steps") {
+            grabcut.run(10);
+            rgba = grabcut.get_result();
+            CHECK_EQ(rgba.size(), width * height * 4);
+            stbi_write_png("grab_10.png", width, height, 4, rgba.data(), width * 4);
+            res_mask = grabcut.get_mask();
+            CHECK_EQ(res_mask.size(), width * height);
+            for (auto& m : res_mask) m *= 255;
+            stbi_write_png("grab_tenstep_mask.png", width, height, 1, res_mask.data(), width);
         }
     }
 }

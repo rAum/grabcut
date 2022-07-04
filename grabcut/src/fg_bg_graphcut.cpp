@@ -11,10 +11,10 @@ namespace grabcut {
 
 namespace {
 
-constexpr float color_distance_euclid(const std::uint8_t* a, const std::uint8_t* b) noexcept {
-    int res[3] = { b[0] - a[0], b[1] - a[1], b[2] - a[2]};
-    res[0] *= res[0]; res[1] *= res[1]; res[2] *= res[2];
-    return sqrtf(float(res[0] + res[1] + res[2]) / 255.f);
+constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t* y) noexcept {
+    int res[3] = { y[0] - x[0], y[1] - x[1], y[2] - x[2]};
+    float r(res[0]/255.f), g(res[1]/255.f), b(res[2]/255.f);
+    return r*r + g*g + b*b;
 }
 
 } // namespace
@@ -48,7 +48,7 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
 
     constexpr float diag_distance = 1.f / M_SQRT2;
     constexpr float full_distance = 1.f;
-    constexpr float beta = 0.13f;
+    constexpr float beta = 0.11f;
 
     auto diag_weight = [&](float color_distance) -> float {
         return Impl::lambda * diag_distance * expf(-beta * color_distance);
@@ -84,7 +84,25 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
         }
     }
 
-    // TODO: add diagnoal connectivity
+    constexpr bool with_diagonals = true;
+    if (!with_diagonals)
+        return;
+
+    /// the first and last is column is missing a link, but it should be mostly fine ;)
+    for (int i = 1; i < shape.height; ++i) {
+        for (int j = 1; j < shape.width - 1; ++j) {
+            const auto idx = i * shape.width + j;
+            auto prev_i = (i - 1) * shape.width;
+
+            auto weight = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j - 3);
+            weight = diag_weight(weight);
+            graph->add_edge(nodes[idx], nodes[prev_i + j - 1], weight, weight);
+
+            auto weight2 = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j + 3);
+            weight2 = diag_weight(weight2);
+            graph->add_edge(nodes[idx], nodes[prev_i + j + 1], weight2, weight2);
+        }
+    }
 }
 
 void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, const std::uint8_t *imgdata,
