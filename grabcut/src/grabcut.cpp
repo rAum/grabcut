@@ -3,6 +3,7 @@
 #include <grabcut/segmentation_data.h>
 #include <quantization/orchard-bouman.h>
 #include <quantization/quantization_model.hpp>
+#include <grabcut/fg_bg_graphcut.hpp>
 
 namespace grabcut {
 
@@ -11,8 +12,7 @@ struct Grabcut::GbData {
     Shape shape;
     SegmentationData segmentation;
     QuantizationModel color_model;
-    static constexpr int lambda = 50;
-    static constexpr int change_fg_bg_cost = 10 * lambda + 1;
+    FgBgGraphCut graphcut;
 
 
     void init(const std::uint8_t* image, const std::uint8_t* mask, int width, int height, int channels) {
@@ -21,22 +21,13 @@ struct Grabcut::GbData {
         shape.channels = channels;
         this->image = image;
         segmentation.init_from(shape, mask);
-        quantization::quantize(image, shape, mask, color_model);
+        graphcut.build_graph(shape, image);
     }
 
     void run() {
-        // for now just run slassification based on foreground & background GMM
-        auto out = segmentation.segmap.data();
-        constexpr float to_zero_one = 1.f/255.f;
-        for(auto rgb=image; rgb != image + shape.chsize(); rgb += 3, out += 1) {
-            if (*out == Trimap::Foreground) {
-                Eigen::Vector3f color{rgb[0] * to_zero_one, rgb[1] * to_zero_one, rgb[2] * to_zero_one};
-                auto fg = color_model.gmm[0].probability(color);
-                auto bg = color_model.gmm[1].probability(color);
-                *out = fg > bg ? Trimap::Foreground : Trimap::Background;
-            }
-        }
-
+        quantization::quantize(image, shape, segmentation.segmap.data(), color_model);
+        graphcut.update_sink_source(color_model, image, segmentation);
+        graphcut.run(segmentation);
     }
 
 };

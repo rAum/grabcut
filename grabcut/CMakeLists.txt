@@ -3,11 +3,13 @@ add_library(grabcut
         src/orchard-bouman.cpp
         src/grabcut.cpp
         src/segmentation_data.cpp
+        src/fg_bg_graphcut.cpp
         )
 
 target_link_libraries(grabcut PRIVATE
         ${OpenCV_LIBRARIES}
         Eigen3::Eigen
+        maxflow
         )
 target_compile_definitions(grabcut PUBLIC GRABCUT_VERSION="${PROJECT_VERSION}")
 target_include_directories(grabcut PUBLIC
