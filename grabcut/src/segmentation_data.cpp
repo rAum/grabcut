@@ -5,17 +5,17 @@ namespace grabcut {
 void SegmentationData::init_from(Shape _shape, const std::uint8_t *mask) {
     shape = _shape;
     segmap.clear();
+    segmap.assign(shape.size(), Trimap::Background);
     trimap.clear();
-    segmap.resize(shape.size(), Trimap::Background);
-    trimap.resize(shape.size(), Trimap::Unknown);
+    trimap.assign(shape.size(), Trimap::Background);
 
     auto tri = trimap.data();
     auto seg = segmap.data();
 
     for (auto m=mask; m != mask + shape.size(); ++m, ++tri, ++seg) {
         if (*m) {
-            *tri = Trimap::Unknown;
             *seg = Trimap::Foreground;
+            *tri = Trimap::Unknown;
         }
     }
 }

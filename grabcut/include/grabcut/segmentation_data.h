@@ -11,8 +11,6 @@ namespace grabcut {
 
 struct Shape {
     int width, height, channels;
-    int stride;
-
     int size() const noexcept { return width * height; }
     int chsize() const noexcept { return size() * channels; }
 };

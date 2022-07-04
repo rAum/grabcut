@@ -34,11 +34,14 @@ struct GaussianModel {
     T probability_density(const VecT& v) const noexcept {
         constexpr T pip = detail::pow<T>(2*M_PI, DIM);
         double probability_density(0.);
-        if (determinant > 0) {
+        // TODO: yeah... there might be numerical issues with inverse
+        // so for now let's ignore anything with small determinant
+        if (determinant > T(5e-11)) {
             auto diff = v - mean;
             double distribution = diff.transpose() * (inverse * diff);
             probability_density = std::exp(-0.5 * distribution) / std::sqrt(pip * determinant);
         }
+
         return probability_density;
     }
 
