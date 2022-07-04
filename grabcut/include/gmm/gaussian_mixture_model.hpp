@@ -66,9 +66,8 @@ public:
                 total_weights += gaussian.a_priori_weight;
             }
         }
-        //FXIME: investigate why sum(total_weights) != 1
         if (total_weights == 0) return 0;
-        return total_probability / total_weights; // clamp(total_probability / total_weights, T(0), T(1));
+        return total_probability / total_weights;
     }
 
     [[nodiscard]]
