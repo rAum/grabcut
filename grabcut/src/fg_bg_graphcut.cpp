@@ -17,6 +17,30 @@ constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t*
     return r*r + g*g + b*b;
 }
 
+float estimate_beta(const Shape& shape, const std::uint8_t* image) noexcept {
+    const int w = shape.width;
+    const int h = shape.height;
+    double beta(0);
+    int edges(0);
+    for (int i = 1; i < h; ++i) {
+        for (int j = 1; j < w-1; ++j) {
+            auto curr_indx = image + 3*(i*w+j);
+
+            auto left = color_distance_euclid(curr_indx, image + 3*(i*w + j-1));
+            auto up = color_distance_euclid(curr_indx, image + 3*((i-1)*w +j));
+            auto up_left = color_distance_euclid(curr_indx, image + 3*((i-1)*w + j-1));
+            auto up_right = color_distance_euclid(curr_indx, image + 3*((i-1)*w + j+1));
+            beta += left + up + up_left + up_right;
+            edges += 4;
+        }
+    }
+
+    if (beta <= std::numeric_limits<decltype(beta)>::epsilon()) {
+        beta = 0;
+    }
+    return static_cast<float>(edges / (2.f * beta));
+}
+
 } // namespace
 
 struct FgBgGraphCut::Impl {
@@ -47,7 +71,7 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     }
 
     constexpr float diag_distance = 1.f / M_SQRT2;
-    constexpr float beta = 0.11f;
+    const float beta = estimate_beta(shape, imgdata);
 
     auto diag_weight = [&](float color_distance) -> float {
         return Impl::lambda * diag_distance * expf(-beta * color_distance);
