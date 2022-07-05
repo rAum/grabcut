@@ -47,7 +47,6 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     }
 
     constexpr float diag_distance = 1.f / M_SQRT2;
-    constexpr float full_distance = 1.f;
     constexpr float beta = 0.11f;
 
     auto diag_weight = [&](float color_distance) -> float {
@@ -72,16 +71,15 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     // vertical connections
     Graph::node_id* last_line = nodes.data();
     Graph::node_id* this_line = nodes.data() + shape.width;
-    for (int i = 1; i < shape.height; ++i) {
-        for (int j = 0; j < shape.width; ++j) {
-            auto offset = std::distance(nodes.data(), this_line) * 3;
-            auto offset_last = std::distance(nodes.data(), last_line) * 3;
-            float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset_last);
-            edge_weight = border_weight(edge_weight);
-            graph->add_edge(*last_line, *this_line, edge_weight, edge_weight);
-            ++last_line;
-            ++this_line;
-        }
+    const Graph::node_id* end_line_el = nodes.data() + shape.size();
+    while (this_line != end_line_el) {
+        auto offset = std::distance(nodes.data(), this_line) * 3;
+        auto offset_last = std::distance(nodes.data(), last_line) * 3;
+        float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset_last);
+        edge_weight = border_weight(edge_weight);
+        graph->add_edge(*last_line, *this_line, edge_weight, edge_weight);
+        ++last_line;
+        ++this_line;
     }
 
     constexpr bool with_diagonals = true;
