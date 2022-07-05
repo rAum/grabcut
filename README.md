@@ -12,15 +12,10 @@ Lastly, the GMM is then refined by using new segmentation mask and maxflow/mincu
 
 # Example
 
-Given input image:
-
-![flower1](https://user-images.githubusercontent.com/1038102/176899395-7d2faf74-cc36-4eee-80db-5f5133b36557.jpg)
-
-And user rectangle selection:
-![masked_img](https://user-images.githubusercontent.com/1038102/177187342-7c284491-88f1-4b74-ac08-7272976430b1.png)
-
-The algorithm iteratively refines selection (note: this is from wip debug version e.g it lacks proper beta parameter estimation):
-![new_learn_grabcut](https://user-images.githubusercontent.com/1038102/177313472-12733a6e-181b-4133-889f-b1897e9de09f.gif)
+1. Input image
+2. User rectangle selection
+3. Running grabcut (1 iteration)
+![grabcut](https://user-images.githubusercontent.com/1038102/177412036-d8774782-7a8b-45ec-8455-f548c58a76b2.gif)
 
 # Building
 
