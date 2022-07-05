@@ -14,7 +14,8 @@ namespace {
 constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t* y) noexcept {
     int res[3] = { y[0] - x[0], y[1] - x[1], y[2] - x[2]};
     float r(res[0]/255.f), g(res[1]/255.f), b(res[2]/255.f);
-    return r*r + g*g + b*b;
+    float light = .2126f * res[0] + .7152f * res[1] + .0722f * res[2];
+    return r*r + g*g + b*b + 0.00392156862f * light*light;
 }
 
 } // namespace
