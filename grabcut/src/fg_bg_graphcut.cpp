@@ -169,27 +169,21 @@ bool FgBgGraphCut::run(SegmentationData &segdata) {
 
     graph->maxflow();
 
-    bool converged = true;
+    int changed_pixels(0);
 
     auto out = segdata.segmap.data();
     auto node_id = impl_->nodes.data();
     for (const auto& trimap : segdata.trimap) {
-        switch (trimap) {
-            case Trimap::Background:
-            case Trimap::Foreground:
-                //*out = trimap;
-                //break;
-            default:
-                //*out = Trimap::Foreground;
-                auto seg_id = graph->what_segment(*node_id);
-                auto new_value = seg_id == Graph::SOURCE? Trimap::Foreground : Trimap::Background;
-                converged = converged && new_value == *out;
-                *out = new_value;
-        };
+        auto seg_id = graph->what_segment(*node_id);
+        auto new_value = seg_id == Graph::SOURCE? Trimap::Foreground : Trimap::Background;
+        if (new_value != *out) {
+            ++changed_pixels;
+        }
+        *out = new_value;
         ++out;
         ++node_id;
     }
-    return converged;
+    return changed_pixels < 5;
 }
 
 }  // namespace grabcut
