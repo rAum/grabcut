@@ -58,9 +58,9 @@ public:
         size_t max_k = 0;
         for (; k < mixture_.size(); ++k) {
             auto prob = probability_given_k(vec, k);
-            if (prob > max_prob) {
+            if (max_prob < prob) {
                 max_k = k;
-                max_prob = k;
+                max_prob = prob;
             }
         }
         return max_k;
