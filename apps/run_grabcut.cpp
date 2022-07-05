@@ -3,8 +3,23 @@
 #include <string>
 #include <filesystem>
 
+
 #include <opencv2/highgui.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+
+#include <grabcut/grabcut.h>
+
+std::unique_ptr<std::uint8_t[]> get_rect_mask(int width, int height, cv::Rect s) {
+    std::unique_ptr<std::uint8_t[]> mask(new std::uint8_t[width * height]);
+    memset(mask.get(), 0, width * height * sizeof(std::uint8_t));
+    for (int i = s.y; i < s.y+s.height ; ++i) {
+        for (int j = s.x; j < s.x+s.width; ++j) {
+            mask[i * width + j] = 1;
+        }
+    }
+    return mask;
+}
 
 int main(int argc, char** argv) {
     if (argc <= 1) {
@@ -24,15 +39,50 @@ int main(int argc, char** argv) {
     std::string window_name = "Grabcut Interactive Demo";
     cv::namedWindow(window_name);
 
-    cv::Rect selection;
-    do {
-        selection = cv::selectROI(window_name, input_image);
-    } while (selection.area() < 10);
-    std::cout << "cv::Rect selection = { "
-        << selection.x << ", " << selection.y << ", "
-        << selection.width << ", " << selection.height << "};\n";
-    auto result_image = cv::Mat::zeros(input_image.size(), CV_8UC4);
+//    cv::Rect selection;
+//    do {
+//        selection = cv::selectROI(window_name, input_image);
+//    } while (selection.area() < 10);
+//    std::cout << "cv::Rect selection = { "
+//        << selection.x << ", " << selection.y << ", "
+//        << selection.width << ", " << selection.height << "};\n";
+//    auto result_image = cv::Mat::zeros(input_image.size(), CV_8UC4);
+
+    cv::Rect selection = { 68, 23, 539, 510};
+
+    cv::Rect rect = selection;
+    cv::TickMeter timer;
+
+    timer.start();
+    cv::Mat src = input_image;
+    cv::Mat mask = cv::Mat::zeros(src.rows, src.cols, CV_8UC1);
+    cv::Mat bgModel = cv::Mat::zeros(1, 65, CV_64FC1);
+    cv::Mat fgModel = cv::Mat::zeros(1, 65, CV_64FC1);
+    cv::grabCut(src, mask, rect, bgModel, fgModel, 1, cv::GC_INIT_WITH_RECT);
+    timer.stop();
+    std::cout << "OpenCV time: " << timer.getTimeSec() << std::endl;
+
+    cv::Mat mask2 = (mask == 1) + (mask == 3);  // 0 = cv::GC_BGD, 1 = cv::GC_FGD, 2 = cv::PR_BGD, 3 = cv::GC_PR_FGD
+    cv::Mat dest;
+    src.copyTo(dest, mask2);
+
+    // 6. show result
+    cv::imshow("dest", dest);
+
+    timer.start();
+    auto maskm = get_rect_mask(src.cols, src.rows, selection);
+    grabcut::Grabcut myimpl;
+    myimpl.init(src.data, maskm.get(), src.cols, src.rows);
+    myimpl.run(1);
+    timer.stop();
+    std::cout << "my time: " << timer.getTimeSec() << std::endl;
+    auto res = myimpl.get_mask();
+    //for (auto& r : res) r *= 255;
+    cv::Mat cv_res{src.rows, src.cols, CV_8UC1, res.data() };
+    cv::Mat dest2;
+    src.copyTo(dest2, cv_res);
+    cv::imshow("myimpl", dest2);
+
     cv::waitKey();
-    cv::destroyAllWindows();
     return 0;
 }
