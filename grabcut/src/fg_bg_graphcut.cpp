@@ -17,7 +17,24 @@ constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t*
     return r*r + g*g + b*b;
 }
 
-float estimate_beta(const Shape& shape, const std::uint8_t* image) noexcept {
+} // namespace
+
+struct FgBgGraphCut::Impl {
+    std::unique_ptr<Graph> graph;
+    std::vector<Graph::node_id> nodes;
+    float beta = 1.f;
+
+    static constexpr float lambda = 50;
+    static constexpr float maximum = 10 * lambda + 1;
+};
+
+FgBgGraphCut::FgBgGraphCut() {
+    impl_ = std::make_unique<Impl>();
+}
+
+FgBgGraphCut::~FgBgGraphCut() = default;
+
+void FgBgGraphCut::estimate_beta(const Shape shape, const std::uint8_t* image) noexcept {
     const int w = shape.width;
     const int h = shape.height;
     double beta(0);
@@ -36,26 +53,13 @@ float estimate_beta(const Shape& shape, const std::uint8_t* image) noexcept {
     }
 
     if (beta <= std::numeric_limits<decltype(beta)>::epsilon()) {
-        beta = 0;
+        beta = 1.f;
     }
-    return static_cast<float>(edges / (2.f * beta));
+
+    const auto final_beta = static_cast<float>(edges / (2.f * beta));
+    impl_->beta =final_beta;
 }
 
-} // namespace
-
-struct FgBgGraphCut::Impl {
-    std::unique_ptr<Graph> graph;
-    std::vector<Graph::node_id> nodes;
-
-    static constexpr float lambda = 50;
-    static constexpr float maximum = 10 * lambda + 1;
-};
-
-FgBgGraphCut::FgBgGraphCut() {
-    impl_ = std::make_unique<Impl>();
-}
-
-FgBgGraphCut::~FgBgGraphCut() = default;
 
 void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     const int total = shape.size();
@@ -71,10 +75,10 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     }
 
     constexpr float diag_distance = 1.f / M_SQRT2;
-    const float beta = estimate_beta(shape, imgdata);
+    const float beta = impl_->beta;
 
     auto diag_weight = [&](float color_distance) -> float {
-        return Impl::lambda * diag_distance * expf(-beta * color_distance);
+        return (Impl::lambda * diag_distance) * expf(-beta * color_distance);
     };
     auto border_weight = [&](float color_distance) -> float {
         return Impl::lambda * expf(-beta * color_distance);
@@ -160,27 +164,26 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
     }
 }
 
-void FgBgGraphCut::run(SegmentationData &segdata) {
+bool FgBgGraphCut::run(SegmentationData &segdata) {
     auto graph = impl_->graph.get();
 
     graph->maxflow();
 
+    int changed_pixels(0);
+
     auto out = segdata.segmap.data();
     auto node_id = impl_->nodes.data();
     for (const auto& trimap : segdata.trimap) {
-        switch (trimap) {
-            case Trimap::Background:
-            case Trimap::Foreground:
-                //*out = trimap;
-                //break;
-            default:
-                //*out = Trimap::Foreground;
-                auto seg_id = graph->what_segment(*node_id);
-                *out = seg_id == Graph::SOURCE? Trimap::Foreground : Trimap::Background;
-        };
+        auto seg_id = graph->what_segment(*node_id);
+        auto new_value = seg_id == Graph::SOURCE? Trimap::Foreground : Trimap::Background;
+        if (new_value != *out) {
+            ++changed_pixels;
+        }
+        *out = new_value;
         ++out;
         ++node_id;
     }
+    return changed_pixels < 5;
 }
 
 }  // namespace grabcut

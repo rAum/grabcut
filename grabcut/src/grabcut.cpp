@@ -14,6 +14,7 @@ struct Grabcut::GbData {
     SegmentationData segmentation;
     QuantizationModel color_model;
     FgBgGraphCut graphcut;
+    bool converged = false;
 
     void init(const std::uint8_t* image, const std::uint8_t* mask, int width, int height, int channels) {
         shape.width = width;
@@ -21,19 +22,22 @@ struct Grabcut::GbData {
         shape.channels = channels;
         this->image = image;
         segmentation.init_from(shape, mask);
-        graphcut.build_graph(shape, image);
+        converged = false;
+        graphcut.estimate_beta(shape, image);
     }
 
     void run() {
+        if (converged)
+            return;
+
         if (color_model.gmm[0].empty())
             quantization::quantize(image, shape, segmentation.segmap.data(), color_model);
         else
             gmm::learn(color_model, segmentation, image);
-
+        graphcut.build_graph(shape, image);
         graphcut.update_sink_source(color_model, image, segmentation);
-        graphcut.run(segmentation);
+        converged = graphcut.run(segmentation);
     }
-
 };
 
 Grabcut::Grabcut() {

@@ -23,7 +23,9 @@ public:
 
     void update_sink_source(const QuantizationModel& color_model, const std::uint8_t* imgdata, const SegmentationData& segdata);
 
-    void run(SegmentationData& segdata);
+    bool run(SegmentationData& segdata);
+
+    void estimate_beta(const Shape shape, const std::uint8_t* imgdata) noexcept;
 
 private:
     struct Impl;
