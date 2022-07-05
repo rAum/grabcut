@@ -19,7 +19,7 @@ Given input image:
 And user rectangle selection:
 ![masked_img](https://user-images.githubusercontent.com/1038102/177187342-7c284491-88f1-4b74-ac08-7272976430b1.png)
 
-The algorithm iteratively refines selection:
+The algorithm iteratively refines selection (note: this is from wip debug version e.g it lacks proper beta parameter estimation):
 ![new_learn_grabcut](https://user-images.githubusercontent.com/1038102/177313472-12733a6e-181b-4133-889f-b1897e9de09f.gif)
 
 # Building
