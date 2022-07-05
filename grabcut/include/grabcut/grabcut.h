@@ -18,9 +18,15 @@ public:
 
     Grabcut& run(int steps=1);
 
+    [[nodiscard]]
     const std::vector<std::uint8_t>& get_mask() const;
 
+    [[nodiscard]]
     std::vector<std::uint8_t> get_result() const;
+
+    [[nodiscard]]
+    std::vector<std::uint8_t> get_component_map() const;
+
 private:
     struct GbData;
     std::unique_ptr<GbData> impl_;

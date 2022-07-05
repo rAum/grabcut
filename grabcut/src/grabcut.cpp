@@ -4,6 +4,7 @@
 #include <quantization/orchard-bouman.h>
 #include <quantization/quantization_model.hpp>
 #include <grabcut/fg_bg_graphcut.hpp>
+#include <gmm/learn_gmm.hpp>
 
 namespace grabcut {
 
@@ -13,7 +14,6 @@ struct Grabcut::GbData {
     SegmentationData segmentation;
     QuantizationModel color_model;
     FgBgGraphCut graphcut;
-
 
     void init(const std::uint8_t* image, const std::uint8_t* mask, int width, int height, int channels) {
         shape.width = width;
@@ -25,7 +25,11 @@ struct Grabcut::GbData {
     }
 
     void run() {
-        quantization::quantize(image, shape, segmentation.segmap.data(), color_model);
+        if (color_model.gmm[0].empty())
+            quantization::quantize(image, shape, segmentation.segmap.data(), color_model);
+        else
+            gmm::learn(color_model, segmentation, image);
+
         graphcut.update_sink_source(color_model, image, segmentation);
         graphcut.run(segmentation);
     }
@@ -56,6 +60,10 @@ const std::vector<std::uint8_t>& Grabcut::get_mask() const {
 
 std::vector<std::uint8_t> Grabcut::get_result() const {
     return impl_->segmentation.make_rgba(impl_->image, 0, 255);
+}
+
+std::vector<std::uint8_t> Grabcut::get_component_map() const {
+    return impl_->color_model.component_map;
 }
 
 }  // namespace grabcut
