@@ -53,12 +53,14 @@ int main(int argc, char** argv) {
     cv::Rect rect = selection;
     cv::TickMeter timer;
 
+    constexpr int steps = 2;
+
     timer.start();
     cv::Mat src = input_image;
     cv::Mat mask = cv::Mat::zeros(src.rows, src.cols, CV_8UC1);
     cv::Mat bgModel = cv::Mat::zeros(1, 65, CV_64FC1);
     cv::Mat fgModel = cv::Mat::zeros(1, 65, CV_64FC1);
-    cv::grabCut(src, mask, rect, bgModel, fgModel, 1, cv::GC_INIT_WITH_RECT);
+    cv::grabCut(src, mask, rect, bgModel, fgModel, steps, cv::GC_INIT_WITH_RECT);
     timer.stop();
     std::cout << "OpenCV time: " << timer.getTimeSec() << std::endl;
 
@@ -73,7 +75,7 @@ int main(int argc, char** argv) {
     auto maskm = get_rect_mask(src.cols, src.rows, selection);
     grabcut::Grabcut myimpl;
     myimpl.init(src.data, maskm.get(), src.cols, src.rows);
-    myimpl.run(1);
+    myimpl.run(steps);
     timer.stop();
     std::cout << "my time: " << timer.getTimeSec() << std::endl;
     auto res = myimpl.get_mask();
