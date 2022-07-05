@@ -51,6 +51,21 @@ public:
         return std::distance(mixture_.begin(), it);
     }
 
+    [[nodiscard]]
+    size_t strongest_k(const typename GaussianT::VecT& vec) const noexcept {
+        size_t k = 0;
+        T max_prob = -1;
+        size_t max_k = 0;
+        for (; k < mixture_.size(); ++k) {
+            auto prob = probability_given_k(vec, k);
+            if (prob > max_prob) {
+                max_k = k;
+                max_prob = k;
+            }
+        }
+        return max_k;
+    }
+
     void remove(unsigned k) {
         if (k < mixture_.size())
             mixture_.erase(mixture_.begin() + k);

@@ -4,6 +4,7 @@ add_library(grabcut
         src/grabcut.cpp
         src/segmentation_data.cpp
         src/fg_bg_graphcut.cpp
+        src/learn_gmm.cpp
         )
 
 target_link_libraries(grabcut PRIVATE

@@ -40,8 +40,13 @@ struct DynamicGaussianComponent {
         return *this;
     }
 
-    DynamicGaussianComponent& update(int size = -1) {
-        gmm::build_gaussian(gaussian, data, size < 0? data.size() : size);
+    DynamicGaussianComponent& update(size_t size) {
+        gmm::build_gaussian(gaussian, data, size);
+        return *this;
+    }
+
+    DynamicGaussianComponent& update() {
+        gmm::build_gaussian(gaussian, data, data.size());
         return *this;
     }
 
