@@ -1,6 +1,6 @@
 #include <vector>
 #include <memory>
-#include <graph.h>
+#include <maxflow.h>
 
 #include <grabcut/segmentation_data.h>
 #include <quantization/quantization_model.hpp>
@@ -8,6 +8,8 @@
 #include <grabcut/fg_bg_graphcut.hpp>
 
 namespace grabcut {
+
+using Graph = maxflow::Graph_DDD;
 
 namespace {
 
@@ -65,7 +67,8 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
 
-    graph = std::make_unique<Graph>();
+    graph = std::make_unique<Graph>(total, total*8+total);
+
     nodes.clear();
     nodes.reserve(total);
 
