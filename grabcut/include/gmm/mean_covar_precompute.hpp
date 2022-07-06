@@ -80,12 +80,12 @@ public:
     auto get_covariance() const noexcept {
         auto mean = get_mean();
         decltype(prod_) mean_product = mean * mean.transpose();
-
-        decltype(mean) phi;
-        phi.setConstant(5e-15);
-        decltype(prod_) ensure_invertible = phi.asDiagonal();
-
-        decltype(prod_) covariance = ((prod_ / n_) - mean_product) + ensure_invertible;
+        decltype(prod_) covariance = ((prod_ / n_) - mean_product);
+        if (covariance.determinant() < 1e-6) {
+            decltype(mean) phi;
+            phi.setConstant(0.1);
+            covariance += phi.asDiagonal();
+        }
         return covariance;
     }
 
