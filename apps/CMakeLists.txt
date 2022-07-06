@@ -1,3 +1,5 @@
+find_package(OpenCV 4 REQUIRED core imgproc highgui)
+
 set(APP run_grabcut)
 
 add_executable(${APP} run_grabcut.cpp)

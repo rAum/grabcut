@@ -8,7 +8,6 @@ add_library(grabcut
         )
 
 target_link_libraries(grabcut PRIVATE
-        ${OpenCV_LIBRARIES}
         Eigen3::Eigen
         maxflow
         )
