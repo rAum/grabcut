@@ -19,13 +19,15 @@ public:
     FgBgGraphCut();
     ~FgBgGraphCut();
 
-    void build_graph(const Shape shape, const std::uint8_t* imgdata);
+    void build_graph(Shape shape, const std::uint8_t* imgdata);
 
     void update_sink_source(const QuantizationModel& color_model, const std::uint8_t* imgdata, const SegmentationData& segdata);
 
     bool run(SegmentationData& segdata);
 
-    void estimate_beta(const Shape shape, const std::uint8_t* imgdata) noexcept;
+    void estimate_beta(Shape shape, const std::uint8_t* imgdata) noexcept;
+
+    void precompute_edge_weights(Shape shape, const std::uint8_t* imgdata);
 
 private:
     struct Impl;

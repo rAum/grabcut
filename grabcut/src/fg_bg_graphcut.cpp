@@ -22,9 +22,12 @@ constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t*
 struct FgBgGraphCut::Impl {
     std::unique_ptr<cv::detail::GCGraph<double>> graph;
     std::vector<int> nodes;
+    std::vector<float> edge_weights_up;
+    std::vector<float> edge_weights_horizontal;
+    std::vector<std::pair<float, float>> edge_weights_diagonal;
     float beta = 1.f;
 
-    static constexpr float lambda = 50;
+    static constexpr float lambda = 50 ;
     static constexpr float maximum = 10 * lambda + 1;
 };
 
@@ -60,6 +63,49 @@ void FgBgGraphCut::estimate_beta(const Shape shape, const std::uint8_t* image) n
     impl_->beta =final_beta;
 }
 
+void FgBgGraphCut::precompute_edge_weights(const Shape shape, const std::uint8_t* imgdata) {
+    const size_t total = shape.size();
+
+    constexpr float diag_distance = 1.f / M_SQRT2;
+    const float beta = impl_->beta;
+    auto diag_weight = [&](float color_distance) -> float {
+        return (Impl::lambda * diag_distance) * expf(-beta * color_distance);
+    };
+    auto border_weight = [&](float color_distance) -> float {
+        return Impl::lambda * expf(-beta * color_distance);
+    };
+
+    // setup horizontal connections
+    impl_->edge_weights_horizontal.assign(total, 0);
+    float* start = impl_->edge_weights_horizontal.data();
+    float* ptr = impl_->edge_weights_horizontal.data();
+    for (int i = 0; i < shape.height; ++i) {
+        for (int j = 0; j < shape.width - 1; ++j) {
+            auto offset = std::distance(start, ptr) * 3;
+            float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset + 3);
+            *ptr = border_weight(edge_weight);
+            ++ptr;
+        }
+        ++ptr;
+    }
+
+    // vertical connections
+    impl_->edge_weights_up.assign(total, 0);
+    start = impl_->edge_weights_up.data();
+    float* last_line = start;
+    float* this_line = start + shape.width;
+    const float* end_line_el =  start + shape.size();
+    while (this_line != end_line_el) {
+        auto offset = std::distance(start, this_line) * 3;
+        auto offset_last = std::distance(start, last_line) * 3;
+        float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset_last);
+        edge_weight = border_weight(edge_weight);
+        *this_line = edge_weight;
+        ++last_line;
+        ++this_line;
+    }
+}
+
 
 void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     const int total = shape.size();
@@ -76,23 +122,18 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
         nodes.push_back(graph->addVtx());
     }
 
-    constexpr float diag_distance = 1.f / M_SQRT2;
     const float beta = impl_->beta;
 
-    auto diag_weight = [&](float color_distance) -> float {
-        return (Impl::lambda * diag_distance) * expf(-beta * color_distance);
+    auto diag_weight = [beta](float color_distance) -> float {
+        return (Impl::lambda / float(M_SQRT2)) * expf(-beta * color_distance);
     };
-    auto border_weight = [&](float color_distance) -> float {
-        return Impl::lambda * expf(-beta * color_distance);
-    };
-
     // setup horizontal connections
     auto* ptr = nodes.data();
+    const auto* hedge = impl_->edge_weights_horizontal.data();
     for (int i = 0; i < shape.height; ++i) {
         for (int j = 0; j < shape.width - 1; ++j) {
-            auto offset = std::distance(nodes.data(), ptr) * 3;
-            float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset + 3);
-            edge_weight = border_weight(edge_weight);
+            auto offset = std::distance(nodes.data(), ptr);
+            float edge_weight = hedge[offset];
             graph->addEdges(*ptr, *(ptr+1), edge_weight, edge_weight);
             ++ptr;
         }
@@ -102,11 +143,10 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto last_line = nodes.data();
     auto this_line = nodes.data() + shape.width;
     const auto end_line_el = nodes.data() + shape.size();
+    const auto* vedge = impl_->edge_weights_up.data();
     while (this_line != end_line_el) {
-        auto offset = std::distance(nodes.data(), this_line) * 3;
-        auto offset_last = std::distance(nodes.data(), last_line) * 3;
-        float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset_last);
-        edge_weight = border_weight(edge_weight);
+        auto offset = std::distance(nodes.data(), this_line);
+        float edge_weight = vedge[offset];
         graph->addEdges(*last_line, *this_line, edge_weight, edge_weight);
         ++last_line;
         ++this_line;
@@ -143,8 +183,8 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
     const auto& background = color_model.gmm[1];
     auto trimap = segdata.trimap.data();
     for (auto& node : nodes) {
-        float fg_sink_weight = 0;
-        float bg_source_weight = 0;
+        double fg_sink_weight(0);
+        double bg_source_weight(0);
         switch (*trimap) {
             case Trimap::Foreground:
                 fg_sink_weight = maximum_value;
