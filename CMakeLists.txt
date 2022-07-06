@@ -13,13 +13,17 @@ if (BUILD_TESTS)
 endif()
 
 option(DEV_USE_CCACHE "If enabled, tries to find ccache program and use it to speedup recompilation" ON)
-find_package(OpenCV 4 REQUIRED core imgproc highgui)
+option(BUILD_GRABCUT_APPS "If enabled, builds frontend apps - it requires OpenCV!" ON)
+
 include(eigen_importer)
 
 add_subdirectory(external_deps)
-
 add_subdirectory(grabcut)
-add_subdirectory(apps EXCLUDE_FROM_ALL)
+
+if (BUILD_GRABCUT_APPS)
+    add_subdirectory(apps)
+endif()
+
 if (BUILD_TESTS)
     add_subdirectory(tests)
 endif()
