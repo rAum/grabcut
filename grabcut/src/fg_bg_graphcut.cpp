@@ -141,14 +141,14 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
     const auto& background = color_model.gmm[1];
     auto trimap = segdata.trimap.data();
     for (auto& node : nodes) {
-        float fg_src_weight = 0;
-        float bg_sink_weight = 0;
+        float fg_sink_weight = 0;
+        float bg_source_weight = 0;
         switch (*trimap) {
             case Trimap::Foreground:
-                fg_src_weight = maximum_value;
+                fg_sink_weight = maximum_value;
                 break;
             case Trimap::Background:
-                bg_sink_weight = maximum_value;
+                bg_source_weight = maximum_value;
                 break;
             case Trimap::Unknown:
             default:
@@ -156,10 +156,10 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
                 Eigen::Vector3d color(imgdata[offset], imgdata[offset+1], imgdata[offset+2]);
                 color *= 1.f/255.f;
                 // note: the switch between foreground and background weights is correct
-                bg_sink_weight= -log(foreground.probability(color));
-                fg_src_weight = -log(background.probability(color));
+                bg_source_weight= -log(foreground.probability(color));
+                fg_sink_weight = -log(background.probability(color));
         };
-        graph->set_tweights(node, fg_src_weight, bg_sink_weight);
+        graph->add_tweights(node, bg_source_weight, fg_sink_weight);
         ++trimap;
     }
 }
@@ -171,15 +171,22 @@ bool FgBgGraphCut::run(SegmentationData &segdata) {
 
     int changed_pixels(0);
 
+    static_assert((int)Graph::SOURCE == (int)Trimap::Background);
+    static_assert((int)Graph::SINK == (int)Trimap::Foreground);
+
     auto out = segdata.segmap.data();
     auto node_id = impl_->nodes.data();
-    for (const auto& trimap : segdata.trimap) {
-        auto seg_id = graph->what_segment(*node_id);
-        auto new_value = seg_id == Graph::SOURCE? Trimap::Foreground : Trimap::Background;
-        if (new_value != *out) {
-            ++changed_pixels;
+    for (auto trimap : segdata.trimap) {
+        if (trimap == Trimap::Foreground) *out = Trimap::Foreground;
+        else if (trimap == Trimap::Background) *out = Trimap::Background;
+        else {
+            auto seg_id = graph->what_segment(*node_id);
+            auto new_value = static_cast<Trimap>(seg_id);
+            if (new_value != *out) {
+                ++changed_pixels;
+            }
+            *out = new_value;
         }
-        *out = new_value;
         ++out;
         ++node_id;
     }

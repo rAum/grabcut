@@ -8,22 +8,7 @@
 
 #include <grabcut/trimap.hpp>
 
-#include <memory>
-
 namespace quantization {
-
-std::unique_ptr<float[]> to_float(const std::uint8_t*data, const grabcut::Shape& shape) {
-    const int total_values = shape.width * shape.height * shape.channels;
-    const std::uint8_t* curr = data;
-    const std::uint8_t* end = data + (shape.width * shape.height * shape.channels);
-    std::unique_ptr<float[]> float_img(new float[total_values]);
-    float* out = float_img.get();
-    // should gamma correct?
-    for (; curr != end; ++curr, ++out) {
-        *out = *curr / 255.f;
-    }
-    return float_img;
-}
 
 template<class T, int DIM>
 auto split_force(const gmm::GaussianModel<T, DIM>& model,  const Eigen::Matrix<T, DIM, 1>& color) noexcept {

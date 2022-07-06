@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     }
     cv::TickMeter timer;
 
-    constexpr int steps = 1;
+    constexpr int steps = 5;
 
     timer.start();
     cv::Mat src = input_image;
