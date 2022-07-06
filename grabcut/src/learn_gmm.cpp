@@ -19,18 +19,18 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
     auto mask = segdata.segmap.data();
     const auto end = model.component_map.data() + model.component_map.size();
     for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
-        Eigen::Vector3f color(col[0], col[1], col[2]);
+        Eigen::Vector3d color(col[0], col[1], col[2]);
         color *= to_zero_one;
         *component = *mask == Trimap::Background? bg.strongest_k(color) : fg.strongest_k(color);
     }
 
-    std::vector<gmm::MeanCovariancePrecompute<float, 3>> fg_gmm, bg_gmm;
+    std::vector<gmm::MeanCovariancePrecompute<double, 3>> fg_gmm, bg_gmm;
     fg_gmm.resize(fg.size());
     bg_gmm.resize(bg.size());
     mask = segdata.segmap.data();
     col = colors;
     for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
-        Eigen::Vector3f color(col[0], col[1], col[2]);
+        Eigen::Vector3d color(col[0], col[1], col[2]);
         color *= to_zero_one;
         auto& mixture = *mask == Trimap::Background? bg_gmm : fg_gmm;
         mixture[*component].add(color);
@@ -41,7 +41,7 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
         total_fg_size += mix.size();
     }
     for (size_t k = 0; k < fg.size(); ++k) {
-        gmm::build_gaussian(fg[k], fg_gmm[k], total_fg_size);
+        gmm::build_gaussian<double, 3>(fg[k], fg_gmm[k], total_fg_size);
     }
 
     size_t total_bg_size = 0;
@@ -49,7 +49,7 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
         total_bg_size += mix.size();
     }
     for (size_t k = 0; k < fg.size(); ++k) {
-        gmm::build_gaussian(bg[k], bg_gmm[k], total_bg_size);
+        gmm::build_gaussian<double, 3>(bg[k], bg_gmm[k], total_bg_size);
     }
 }
 

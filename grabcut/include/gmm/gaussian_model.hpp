@@ -18,7 +18,7 @@ constexpr T pow(T x, unsigned y) noexcept {
 /**
  * Represents Gaussian Model for distribution modelling
  */
-template<class T, unsigned DIM=3>
+template<class T, int DIM=3>
 struct GaussianModel {
     using VecT = Eigen::Matrix<T, DIM, 1>;
     using MatT = Eigen::Matrix<T, DIM, DIM>;

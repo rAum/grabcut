@@ -25,13 +25,14 @@ std::unique_ptr<float[]> to_float(const std::uint8_t*data, const grabcut::Shape&
     return float_img;
 }
 
-auto split_force(const gmm::GaussianModel<float, 3>& model,  const Eigen::Vector3f& color) noexcept {
+template<class T, int DIM>
+auto split_force(const gmm::GaussianModel<T, DIM>& model,  const Eigen::Matrix<T, DIM, 1>& color) noexcept {
     return model.eigenvectors.col(2).dot(color);
 }
 
 struct DynamicGaussianComponent {
-    gmm::MeanCovariancePrecompute<float, 3> data;
-    gmm::GaussianModel<float, 3> gaussian;
+    gmm::MeanCovariancePrecompute<double, 3> data;
+    gmm::GaussianModel<double, 3> gaussian;
 
     std::size_t size() const noexcept { return data.size(); }
 
@@ -41,12 +42,12 @@ struct DynamicGaussianComponent {
     }
 
     DynamicGaussianComponent& update(size_t size) {
-        gmm::build_gaussian(gaussian, data, size);
+        gmm::build_gaussian<double, 3>(gaussian, data, size);
         return *this;
     }
 
     DynamicGaussianComponent& update() {
-        gmm::build_gaussian(gaussian, data, data.size());
+        gmm::build_gaussian<double, 3>(gaussian, data, data.size());
         return *this;
     }
 
@@ -67,8 +68,8 @@ void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, co
     const auto& fg = fg_gmm[fg_id].gaussian;
     const auto& bg = bg_gmm[bg_id].gaussian;
 
-    const auto split_force_fg = split_force(fg, fg.mean);
-    const auto split_force_bg = split_force(bg, bg.mean);
+    const auto split_force_fg = split_force<double>(fg, fg.mean);
+    const auto split_force_bg = split_force<double>(bg, bg.mean);
 
     const uint8_t* curr = data;
     const uint8_t* mask_curr = mask_data;
@@ -100,7 +101,7 @@ void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, co
         bg_gmm[bg_id].clear_data();
     }
     while (curr != end) {
-        Eigen::Vector3f color(curr[0], curr[1], curr[2]);
+        Eigen::Vector3d color(curr[0], curr[1], curr[2]);
         color *= to_zero_one;
         if (fg_id != k && *mask_curr == grabcut::Foreground && *gmm_c == fg_id) {
             if (split_force(fg, color) > split_force_fg) {
@@ -146,7 +147,7 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
 
     constexpr float to_zero_one = 1.f/255.f;
     while (curr != end) {
-        Eigen::Vector3f color(curr[0], curr[1], curr[2]);
+        Eigen::Vector3d color(curr[0], curr[1], curr[2]);
         color *= to_zero_one;
         switch(*mask_curr) {
             case grabcut::Trimap::Background:
@@ -194,8 +195,8 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     result.strongest_k[1] = bg_id;
     result.component_map = std::move(gmm_component_map);
 
-    gmm::GaussianMixtureModel<float, 3>& final_fg_gmm = result.gmm[0];
-    gmm::GaussianMixtureModel<float, 3>& final_bg_gmm = result.gmm[1];
+    auto& final_fg_gmm = result.gmm[0];
+    auto& final_bg_gmm = result.gmm[1];
 
     final_fg_gmm.clear();
     final_bg_gmm.clear();
