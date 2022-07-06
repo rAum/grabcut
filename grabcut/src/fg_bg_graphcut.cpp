@@ -68,7 +68,7 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
 
-    graph = std::make_unique<Graph>(total, total*(total-1)/2);
+    graph = std::make_unique<Graph>(total, total*8/2);
     nodes.clear();
     nodes.reserve(total);
 

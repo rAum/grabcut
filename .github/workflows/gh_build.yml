@@ -21,8 +21,8 @@ jobs:
         run: cmake -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_GRABCUT_APPS=OFF
       - name: Build DEBUG
         run: cmake --build build -j
+     - name: Run grabcut
+       run: cd build/tests && ./test_grabcut
       - name: Run tests
         run: |
           cd build && CTEST_OUTPUT_ON_FAILURE=1 ctest -j --progress --verbose
-      - name: Run grabcut
-        run: cd build/tests && ./test_grabcut
