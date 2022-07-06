@@ -41,7 +41,7 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
         total_fg_size += mix.size();
     }
     for (size_t k = 0; k < fg.size(); ++k) {
-        gmm::build_gaussian<double, 3>(fg[k], fg_gmm[k], total_fg_size);
+        gmm::build_gaussian(fg[k], fg_gmm[k], total_fg_size);
     }
 
     size_t total_bg_size = 0;
@@ -49,7 +49,7 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
         total_bg_size += mix.size();
     }
     for (size_t k = 0; k < fg.size(); ++k) {
-        gmm::build_gaussian<double, 3>(bg[k], bg_gmm[k], total_bg_size);
+        gmm::build_gaussian(bg[k], bg_gmm[k], total_bg_size);
     }
 }
 

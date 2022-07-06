@@ -21,7 +21,7 @@ class GaussianMixtureModel {
 public:
     static_assert(DIM > 0, "At least dim must be 1");
 
-    using GaussianT = GaussianModel<T, DIM>;
+    using GaussianT = GaussianModelLean<T, DIM>;
 
     GaussianMixtureModel() = default;
 
@@ -111,11 +111,6 @@ public:
 
 private:
     std::vector<GaussianT> mixture_;
-};
-
-struct FgBgGMM {
-    GaussianMixtureModel<float, 3> fg;
-    GaussianMixtureModel<float, 3> bg;
 };
 
 } // namespace gmm

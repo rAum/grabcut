@@ -27,12 +27,12 @@ struct DynamicGaussianComponent {
     }
 
     DynamicGaussianComponent& update(size_t size) {
-        gmm::build_gaussian<double, 3>(gaussian, data, size);
+        gmm::build_gaussian(gaussian, data, size);
         return *this;
     }
 
     DynamicGaussianComponent& update() {
-        gmm::build_gaussian<double, 3>(gaussian, data, data.size());
+        gmm::build_gaussian(gaussian, data, data.size());
         return *this;
     }
 
@@ -187,8 +187,8 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     final_bg_gmm.clear();
 
     for (int i = 0; i < max_k; ++i) {
-        final_fg_gmm.add(std::move(fg_gmm[i].gaussian));
-        final_bg_gmm.add(std::move(bg_gmm[i].gaussian));
+        final_fg_gmm.add(fg_gmm[i].gaussian.get_lean());
+        final_bg_gmm.add(bg_gmm[i].gaussian.get_lean());
     }
 }
 
