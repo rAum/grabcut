@@ -71,6 +71,8 @@ TEST_CASE("Test grabcut implementation") {
             stbi_write_png("comp_2.png", width, height, 1, res_mask.data(), width);
         }
 
+        constexpr bool run_more = false;
+        if (run_more) {
         SUBCASE("Run 5 steps") {
             grabcut.run(5);
             rgba = grabcut.get_result();
@@ -96,5 +98,7 @@ TEST_CASE("Test grabcut implementation") {
             for (auto& m : res_mask) m *= 255 / 5;
             stbi_write_png("comp_10.png", width, height, 1, res_mask.data(), width);
         }
+
+        } // run more
     }
 }
