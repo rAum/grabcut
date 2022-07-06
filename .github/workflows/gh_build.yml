@@ -24,3 +24,5 @@ jobs:
       - name: Run tests
         run: |
           cd build && CTEST_OUTPUT_ON_FAILURE=1 ctest -j --progress --verbose
+      - name: Run grabcut
+        run: cd build/tests && ./test_grabcut
