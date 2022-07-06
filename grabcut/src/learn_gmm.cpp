@@ -13,14 +13,11 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
     auto& fg = model.gmm[0];
     auto& bg = model.gmm[1];
 
-    constexpr float to_zero_one = 1.f / 255.f;
-
     auto col = colors;
     auto mask = segdata.segmap.data();
     const auto end = model.component_map.data() + model.component_map.size();
     for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
         Eigen::Vector3d color(col[0], col[1], col[2]);
-        color *= to_zero_one;
         *component = *mask == Trimap::Background? bg.strongest_k(color) : fg.strongest_k(color);
     }
 
@@ -31,7 +28,6 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
     col = colors;
     for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
         Eigen::Vector3d color(col[0], col[1], col[2]);
-        color *= to_zero_one;
         auto& mixture = *mask == Trimap::Background? bg_gmm : fg_gmm;
         mixture[*component].add(color);
     }

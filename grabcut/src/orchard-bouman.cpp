@@ -44,8 +44,6 @@ struct DynamicGaussianComponent {
 void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, const uint8_t *mask_data,
                             std::vector<DynamicGaussianComponent> &fg_gmm, std::vector<DynamicGaussianComponent> &bg_gmm,
                             std::vector<std::uint8_t> &gmm_component_map, int fg_id, int bg_id, int k) {
-    constexpr float to_zero_one = 1.f / 255.f;
-
     if (fg_id == k && bg_id == k) {
         return;
     }
@@ -87,7 +85,6 @@ void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, co
     }
     while (curr != end) {
         Eigen::Vector3d color(curr[0], curr[1], curr[2]);
-        color *= to_zero_one;
         if (fg_id != k && *mask_curr == grabcut::Foreground && *gmm_c == fg_id) {
             if (split_force(fg, color) > split_force_fg) {
                 *gmm_c = static_cast<uint8_t>(k);
@@ -130,10 +127,8 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     const std::uint8_t* mask_curr = mask_data;
     const std::uint8_t* end = data + (shape.width * shape.height * shape.channels);
 
-    constexpr float to_zero_one = 1.f/255.f;
     while (curr != end) {
         Eigen::Vector3d color(curr[0], curr[1], curr[2]);
-        color *= to_zero_one;
         switch(*mask_curr) {
             case grabcut::Trimap::Background:
                 bg_gmm.front().data.add(color);
