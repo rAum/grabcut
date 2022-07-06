@@ -13,8 +13,7 @@ namespace {
 
 constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t* y) noexcept {
     int res[3] = { y[0] - x[0], y[1] - x[1], y[2] - x[2]};
-    float r(res[0]/255.f), g(res[1]/255.f), b(res[2]/255.f);
-    return r*r + g*g + b*b;
+    return static_cast<float>(res[0]*res[0] + res[1]*res[1]+ res[2]*res[2]);
 }
 
 } // namespace
@@ -154,7 +153,6 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
             default:
                 auto offset = std::distance(segdata.trimap.data(), trimap) * 3;
                 Eigen::Vector3d color(imgdata[offset], imgdata[offset+1], imgdata[offset+2]);
-                color *= 1.f/255.f;
                 // note: the switch between foreground and background weights is correct
                 bg_source_weight= -log(foreground.probability(color));
                 fg_sink_weight = -log(background.probability(color));
