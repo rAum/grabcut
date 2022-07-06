@@ -24,6 +24,7 @@ struct Grabcut::GbData {
         segmentation.init_from(shape, mask);
         converged = false;
         graphcut.estimate_beta(shape, image);
+        graphcut.precompute_edge_weights(shape, image);
     }
 
     void run() {
