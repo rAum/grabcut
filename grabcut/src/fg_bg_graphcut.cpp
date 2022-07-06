@@ -104,6 +104,29 @@ void FgBgGraphCut::precompute_edge_weights(const Shape shape, const std::uint8_t
         ++last_line;
         ++this_line;
     }
+
+    constexpr bool with_diagonals = true;
+    if (!with_diagonals)
+        return;
+
+    impl_->edge_weights_diagonal.assign(total, {0, 0});
+    auto *out = impl_->edge_weights_diagonal.data();
+    /// the first and last is column is missing a link, but it should be mostly fine ;)
+    for (int i = 1; i < shape.height; ++i) {
+        for (int j = 1; j < shape.width - 1; ++j) {
+            const auto idx = i * shape.width + j;
+            auto prev_i = (i - 1) * shape.width;
+
+            auto weight = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j - 3);
+            weight = diag_weight(weight);
+
+            auto weight2 = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j + 3);
+            weight2 = diag_weight(weight2);
+
+            out[idx].first = weight;
+            out[idx].second = weight2;
+        }
+    }
 }
 
 
@@ -157,18 +180,14 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
         return;
 
     /// the first and last is column is missing a link, but it should be mostly fine ;)
+    const auto* diag = impl_->edge_weights_diagonal.data();
     for (int i = 1; i < shape.height; ++i) {
         for (int j = 1; j < shape.width - 1; ++j) {
             const auto idx = i * shape.width + j;
             auto prev_i = (i - 1) * shape.width;
-
-            auto weight = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j - 3);
-            weight = diag_weight(weight);
-            graph->addEdges(nodes[idx], nodes[prev_i + j - 1], weight, weight);
-
-            auto weight2 = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j + 3);
-            weight2 = diag_weight(weight2);
-            graph->addEdges(nodes[idx], nodes[prev_i + j + 1], weight2, weight2);
+            auto w = diag[idx];
+            graph->addEdges(nodes[idx], nodes[prev_i + j - 1], w.first, w.first);
+            graph->addEdges(nodes[idx], nodes[prev_i + j + 1], w.second, w.second);
         }
     }
 }
