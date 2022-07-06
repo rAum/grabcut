@@ -23,5 +23,4 @@ jobs:
         run: cmake --build build -j
       - name: Run tests
         run: |
-          cd build && ctest -vv -j --progress
-          ctest -j -vv --progress --rerun-failed --output-on-failure
+          cd build && CTEST_OUTPUT_ON_FAILURE=1 ctest -j --progress --verbose
