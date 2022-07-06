@@ -22,4 +22,6 @@ jobs:
       - name: Build DEBUG
         run: cmake --build build -j
       - name: Run tests
-        run: cd build && ctest -vv -j --progress
+        run: |
+          cd build && ctest -vv -j --progress
+          ctest -j -vv --progress --rerun-failed --output-on-failure
