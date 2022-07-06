@@ -153,11 +153,11 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
             case Trimap::Unknown:
             default:
                 auto offset = std::distance(segdata.trimap.data(), trimap) * 3;
-                Eigen::Vector3f color(imgdata[offset], imgdata[offset+1], imgdata[offset+2]);
+                Eigen::Vector3d color(imgdata[offset], imgdata[offset+1], imgdata[offset+2]);
                 color *= 1.f/255.f;
                 // note: the switch between foreground and background weights is correct
-                bg_sink_weight= -logf(foreground.probability(color));
-                fg_src_weight = -logf(background.probability(color));
+                bg_sink_weight= -log(foreground.probability(color));
+                fg_src_weight = -log(background.probability(color));
         };
         graph->set_tweights(node, fg_src_weight, bg_sink_weight);
         ++trimap;
