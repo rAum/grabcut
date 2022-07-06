@@ -1,11 +1,13 @@
 #include <vector>
 #include <memory>
-#include <graph.h>
+#include <maxflow.h>
 
 #include <grabcut/segmentation_data.h>
 #include <quantization/quantization_model.hpp>
 
 #include <grabcut/fg_bg_graphcut.hpp>
+
+using Graph = maxflow::Graph_FFF;
 
 namespace grabcut {
 
@@ -66,7 +68,7 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
 
-    graph = std::make_unique<Graph>();
+    graph = std::make_unique<Graph>(total, total*(total-1)/2);
     nodes.clear();
     nodes.reserve(total);
 
@@ -159,7 +161,7 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
                 bg_sink_weight= -log(foreground.probability(color));
                 fg_src_weight = -log(background.probability(color));
         };
-        graph->set_tweights(node, fg_src_weight, bg_sink_weight);
+        graph->add_tweights(node, fg_src_weight, bg_sink_weight);
         ++trimap;
     }
 }

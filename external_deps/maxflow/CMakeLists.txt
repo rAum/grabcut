@@ -3,7 +3,6 @@
 # TODO: Update code and clean this up
 
 add_library(maxflow SHARED
-    graph.cpp
     maxflow.cpp
 )
 
