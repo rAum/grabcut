@@ -21,6 +21,8 @@ public:
 
     void build_graph(const Shape shape, const std::uint8_t* imgdata);
 
+    void build_sink_source(const QuantizationModel& color_model, const std::uint8_t* imgdata, const SegmentationData& segdata);
+
     void update_sink_source(const QuantizationModel& color_model, const std::uint8_t* imgdata, const SegmentationData& segdata);
 
     bool run(SegmentationData& segdata);

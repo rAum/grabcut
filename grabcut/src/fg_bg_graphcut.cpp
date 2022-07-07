@@ -24,6 +24,7 @@ struct FgBgGraphCut::Impl {
     std::unique_ptr<Graph> graph;
     std::vector<Graph::node_id> nodes;
     float beta = 1.f;
+    bool reusue_trees = false;
 
     static constexpr float lambda = 50;
     static constexpr float maximum = 10 * lambda + 1;
@@ -66,6 +67,8 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     const int total = shape.size();
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
+
+    impl_->reusue_trees = false;
 
     graph = std::make_unique<Graph>(total, total*8+total);
 
@@ -133,7 +136,7 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     }
 }
 
-void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, const std::uint8_t *imgdata,
+void FgBgGraphCut::build_sink_source(const QuantizationModel &color_model, const std::uint8_t *imgdata,
                                       const SegmentationData &segdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
@@ -163,12 +166,37 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
         graph->add_tweights(node, bg_source_weight, fg_sink_weight);
         ++trimap;
     }
+    impl_->reusue_trees = false;
+}
+
+void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, const std::uint8_t *imgdata,
+                                      const SegmentationData &segdata) {
+    auto& graph = impl_->graph;
+    auto& nodes = impl_->nodes;
+
+    constexpr float maximum_value = Impl::maximum;
+    const auto& foreground = color_model.gmm[0];
+    const auto& background = color_model.gmm[1];
+    auto trimap = segdata.trimap.data();
+    for (auto& node : nodes) {
+        if (*trimap == Trimap::Unknown) {
+            auto offset = std::distance(segdata.trimap.data(), trimap) * 3;
+            Eigen::Vector3d color(imgdata[offset], imgdata[offset + 1], imgdata[offset + 2]);
+            // note: the switch between foreground and background weights is correct
+            auto bg_source_weight = -log(foreground.probability(color));
+            auto fg_sink_weight = -log(background.probability(color));
+            graph->add_tweights(node, bg_source_weight, fg_sink_weight);
+            graph->mark_node(node);
+        }
+        ++trimap;
+    }
 }
 
 bool FgBgGraphCut::run(SegmentationData &segdata) {
     auto graph = impl_->graph.get();
 
-    graph->maxflow();
+    graph->maxflow(impl_->reusue_trees);
+    impl_->reusue_trees = true;
 
     int changed_pixels(0);
 
