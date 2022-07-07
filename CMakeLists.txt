@@ -15,7 +15,6 @@ endif()
 option(DEV_USE_CCACHE "If enabled, tries to find ccache program and use it to speedup recompilation" ON)
 option(BUILD_GRABCUT_APPS "If enabled, builds frontend apps - it requires OpenCV!" ON)
 
-include(eigen_importer)
 
 add_subdirectory(external_deps)
 add_subdirectory(grabcut)

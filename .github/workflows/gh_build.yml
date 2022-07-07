@@ -13,10 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - name: Install external packages
-        run:  |
-          sudo apt update
-          sudo apt install -y libeigen3-dev
       - name: Run cmake setup for DEBUG build
         run: cmake -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_GRABCUT_APPS=OFF
       - name: Build DEBUG
