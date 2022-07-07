@@ -8,7 +8,6 @@
 # TODO: switch to boost graph library
 
 add_library(maxflow SHARED
-    graph.cpp
     maxflow.cpp
 )
 
