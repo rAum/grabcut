@@ -19,4 +19,17 @@ Lastly, the GMM is then refined by using new segmentation mask and maxflow/mincu
 
 # Building
 
-At the moment it requires OpenCV and Eigen installed and it can be build by default cmake commands but there is no user-facing app yet.
+At the moment all batteries are included for library/tests but it requires OpenCV for user-facing app.
+
+```
+cmake -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_GRABCUT_APPS=OFF
+cmake --build build -j
+```
+for building library and tests, and if you have installed OpenCV findable by CMake:
+```
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GRABCUT_APPS=ON
+cmake --build build -j
+```
+which will build app which runs OpenCV and this implementation for comparision (this is slower and results may vary)
+
+`build/apps/run_grabcut <img.jpg|png>`
