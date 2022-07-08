@@ -23,18 +23,21 @@ struct Grabcut::GbData {
         this->image = image;
         segmentation.init_from(shape, mask);
         converged = false;
-        graphcut.estimate_beta(shape, image);
-        graphcut.precompute_edge_weights(shape, image);
     }
 
     void run() {
         if (converged)
             return;
 
-        if (color_model.gmm[0].empty())
+        if (color_model.gmm[0].empty()) {
             quantization::quantize(image, shape, segmentation.segmap.data(), color_model);
-        else
+            graphcut.estimate_beta(shape, image);
+            graphcut.precompute_edge_weights(shape, image);
+            graphcut.allocate(shape);
+        }
+        else {
             gmm::learn(color_model, segmentation, image);
+        }
         graphcut.build_graph(shape, image);
         graphcut.update_sink_source(color_model, image, segmentation);
         converged = graphcut.run(segmentation);

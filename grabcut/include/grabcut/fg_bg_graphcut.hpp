@@ -19,6 +19,8 @@ public:
     FgBgGraphCut();
     ~FgBgGraphCut();
 
+    void allocate(Shape shape);
+
     void build_graph(Shape shape, const std::uint8_t* imgdata);
 
     void update_sink_source(const QuantizationModel& color_model, const std::uint8_t* imgdata, const SegmentationData& segdata);
