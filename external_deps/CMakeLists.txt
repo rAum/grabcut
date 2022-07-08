@@ -6,7 +6,6 @@ if (BUILD_TESTS)
     add_subdirectory(doctest)
 endif()
 
-add_subdirectory(maxflow)
 add_subdirectory(stb)
 add_subdirectory(corrade_lean)
 add_subdirectory(eigen)
