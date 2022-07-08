@@ -43,3 +43,15 @@ A few examples to compare with OpenCV (5 iterations for each implementation):
 Flower:
 ![image](https://user-images.githubusercontent.com/1038102/178000233-604e83d6-3324-4b55-95a3-f7252456ddba.png)
 
+People:
+
+![image](https://user-images.githubusercontent.com/1038102/178004148-8c61cc24-3212-4ae6-b367-3c47248f1174.png)
+
+![people](https://user-images.githubusercontent.com/1038102/178004295-177dbb26-6da8-4b82-a5c0-380061c9dcde.jpg)
+
+![image](https://user-images.githubusercontent.com/1038102/178004192-0e51a903-b1b8-43ee-8412-d5bfae3a792d.png)
+
+![image](https://user-images.githubusercontent.com/1038102/178004167-75656f5e-98c3-4a38-97b5-b4e4352975bb.png)
+
+
+
