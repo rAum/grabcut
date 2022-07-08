@@ -7,6 +7,8 @@
 
 #include <grabcut/fg_bg_graphcut.hpp>
 
+#include <gcgraph.hpp>
+
 namespace grabcut {
 
 namespace {
@@ -19,8 +21,8 @@ constexpr float color_distance_euclid(const std::uint8_t* x, const std::uint8_t*
 } // namespace
 
 struct FgBgGraphCut::Impl {
-    std::unique_ptr<Graph> graph;
-    std::vector<Graph::node_id> nodes;
+    std::unique_ptr<cv::detail::GCGraph<double>> graph;
+    std::vector<int> nodes;
     float beta = 1.f;
 
     static constexpr float lambda = 50;
@@ -65,12 +67,14 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
 
-    graph = std::make_unique<Graph>();
+    graph = std::make_unique<cv::detail::GCGraph<double>>();
+    int edge_count = 2*(4*total - 3*(shape.width + shape.height) + 2);
+    graph->create(total+2, edge_count);
     nodes.clear();
     nodes.reserve(total);
 
     for (int i = 0; i < total; ++i) {
-        nodes.push_back(graph->add_node());
+        nodes.push_back(graph->addVtx());
     }
 
     constexpr float diag_distance = 1.f / M_SQRT2;
@@ -84,27 +88,27 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     };
 
     // setup horizontal connections
-    Graph::node_id* ptr = nodes.data();
+    auto* ptr = nodes.data();
     for (int i = 0; i < shape.height; ++i) {
         for (int j = 0; j < shape.width - 1; ++j) {
             auto offset = std::distance(nodes.data(), ptr) * 3;
             float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset + 3);
             edge_weight = border_weight(edge_weight);
-            graph->add_edge(*ptr, *(ptr+1), edge_weight, edge_weight);
+            graph->addEdges(*ptr, *(ptr+1), edge_weight, edge_weight);
             ++ptr;
         }
         ++ptr;
     }
     // vertical connections
-    Graph::node_id* last_line = nodes.data();
-    Graph::node_id* this_line = nodes.data() + shape.width;
-    const Graph::node_id* end_line_el = nodes.data() + shape.size();
+    auto last_line = nodes.data();
+    auto this_line = nodes.data() + shape.width;
+    const auto end_line_el = nodes.data() + shape.size();
     while (this_line != end_line_el) {
         auto offset = std::distance(nodes.data(), this_line) * 3;
         auto offset_last = std::distance(nodes.data(), last_line) * 3;
         float edge_weight = color_distance_euclid(imgdata + offset, imgdata + offset_last);
         edge_weight = border_weight(edge_weight);
-        graph->add_edge(*last_line, *this_line, edge_weight, edge_weight);
+        graph->addEdges(*last_line, *this_line, edge_weight, edge_weight);
         ++last_line;
         ++this_line;
     }
@@ -121,11 +125,11 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
 
             auto weight = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j - 3);
             weight = diag_weight(weight);
-            graph->add_edge(nodes[idx], nodes[prev_i + j - 1], weight, weight);
+            graph->addEdges(nodes[idx], nodes[prev_i + j - 1], weight, weight);
 
             auto weight2 = color_distance_euclid(imgdata + idx * 3, imgdata + prev_i * 3 + 3 * j + 3);
             weight2 = diag_weight(weight2);
-            graph->add_edge(nodes[idx], nodes[prev_i + j + 1], weight2, weight2);
+            graph->addEdges(nodes[idx], nodes[prev_i + j + 1], weight2, weight2);
         }
     }
 }
@@ -157,7 +161,7 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
                 bg_source_weight= -log(foreground.probability(color));
                 fg_sink_weight = -log(background.probability(color));
         };
-        graph->add_tweights(node, bg_source_weight, fg_sink_weight);
+        graph->addTermWeights(node, bg_source_weight, fg_sink_weight);
         ++trimap;
     }
 }
@@ -165,7 +169,7 @@ void FgBgGraphCut::update_sink_source(const QuantizationModel &color_model, cons
 bool FgBgGraphCut::run(SegmentationData &segdata) {
     auto graph = impl_->graph.get();
 
-    graph->maxflow();
+    graph->maxFlow();
 
     int changed_pixels(0);
 
@@ -178,8 +182,8 @@ bool FgBgGraphCut::run(SegmentationData &segdata) {
         if (trimap == Trimap::Foreground) *out = Trimap::Foreground;
         else if (trimap == Trimap::Background) *out = Trimap::Background;
         else {
-            auto seg_id = graph->what_segment(*node_id);
-            auto new_value = static_cast<Trimap>(seg_id);
+            auto seg_id = !graph->inSourceSegment(*node_id);
+            auto new_value = seg_id? Trimap::Foreground : Trimap::Background;
             if (new_value != *out) {
                 ++changed_pixels;
             }

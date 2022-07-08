@@ -17,6 +17,7 @@ target_include_directories(grabcut PUBLIC
         $<INSTALL_INTERFACE:include/>
         )
 target_include_directories(grabcut PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include/>)
+target_include_directories(grabcut PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/external_priv_include/>)
 
 set_property(TARGET grabcut PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET grabcut PROPERTY VISIBILITY_INLINES_HIDDEN ON)
