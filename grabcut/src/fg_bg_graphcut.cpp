@@ -37,6 +37,17 @@ FgBgGraphCut::FgBgGraphCut() {
 
 FgBgGraphCut::~FgBgGraphCut() = default;
 
+void FgBgGraphCut::allocate(Shape shape) {
+    impl_->graph = std::make_unique<cv::detail::GCGraph<double>>();
+    impl_->nodes.clear();
+    const size_t total = shape.size();
+    impl_->nodes.reserve(total);
+
+    for (size_t i = 0; i < total; ++i) {
+        impl_->nodes.push_back(impl_->graph->addVtx());
+    }
+}
+
 void FgBgGraphCut::estimate_beta(const Shape shape, const std::uint8_t* image) noexcept {
     const int w = shape.width;
     const int h = shape.height;
@@ -45,7 +56,6 @@ void FgBgGraphCut::estimate_beta(const Shape shape, const std::uint8_t* image) n
     for (int i = 1; i < h; ++i) {
         for (int j = 1; j < w-1; ++j) {
             auto curr_indx = image + 3*(i*w+j);
-
             auto left = color_distance_euclid(curr_indx, image + 3*(i*w + j-1));
             auto up = color_distance_euclid(curr_indx, image + 3*((i-1)*w +j));
             auto up_left = color_distance_euclid(curr_indx, image + 3*((i-1)*w + j-1));
@@ -135,15 +145,8 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
     auto& graph = impl_->graph;
     auto& nodes = impl_->nodes;
 
-    graph = std::make_unique<cv::detail::GCGraph<double>>();
     int edge_count = 2*(4*total - 3*(shape.width + shape.height) + 2);
-    graph->create(total+2, edge_count);
-    nodes.clear();
-    nodes.reserve(total);
-
-    for (int i = 0; i < total; ++i) {
-        nodes.push_back(graph->addVtx());
-    }
+    graph->create(total, edge_count);
 
     // setup horizontal connections
     auto* ptr = nodes.data();

@@ -101,9 +101,9 @@ GCGraph<TWeight>::~GCGraph()
 template <class TWeight>
 void GCGraph<TWeight>::create( unsigned int vtxCount, unsigned int edgeCount )
 {
+    vtcs.resize(vtxCount);
+    std::memset(vtcs.data(), 0, sizeof(Vtx) * vtxCount);
     edges.clear();
-    vtcs.clear();
-    vtcs.reserve( vtxCount );
     edges.reserve( edgeCount + 2 );
     flow = 0;
 }
