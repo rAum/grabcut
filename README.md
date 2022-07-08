@@ -33,3 +33,15 @@ cmake --build build -j
 which will build app which runs OpenCV and this implementation for comparision (this is slower and results may vary)
 
 `build/apps/run_grabcut <img.jpg|png>`
+
+# Comparision with OpenCV
+A few examples to compare with OpenCV (5 iterations for each implementation):
+
+![image](https://user-images.githubusercontent.com/1038102/177999791-ec49f3c1-bf36-489c-bcd4-10f932e440a7.png)
+![image](https://user-images.githubusercontent.com/1038102/177999884-e22ea3d8-46cb-450f-8871-5399b495b802.png)
+
+Flower:
+![image](https://user-images.githubusercontent.com/1038102/178000233-604e83d6-3324-4b55-95a3-f7252456ddba.png)
+
+Smoke:
+![image](https://user-images.githubusercontent.com/1038102/178000665-4f949582-41d6-4da4-9211-ba5070a5b2e9.png)
