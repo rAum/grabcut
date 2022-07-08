@@ -145,11 +145,6 @@ void FgBgGraphCut::build_graph(const Shape shape, const std::uint8_t* imgdata) {
         nodes.push_back(graph->addVtx());
     }
 
-    const float beta = impl_->beta;
-
-    auto diag_weight = [beta](float color_distance) -> float {
-        return (Impl::lambda / float(M_SQRT2)) * expf(-beta * color_distance);
-    };
     // setup horizontal connections
     auto* ptr = nodes.data();
     const auto* hedge = impl_->edge_weights_horizontal.data();
