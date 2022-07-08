@@ -43,5 +43,3 @@ A few examples to compare with OpenCV (5 iterations for each implementation):
 Flower:
 ![image](https://user-images.githubusercontent.com/1038102/178000233-604e83d6-3324-4b55-95a3-f7252456ddba.png)
 
-Smoke:
-![image](https://user-images.githubusercontent.com/1038102/178000665-4f949582-41d6-4da4-9211-ba5070a5b2e9.png)
