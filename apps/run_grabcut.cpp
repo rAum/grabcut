@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 
     constexpr int steps = 5;
 
+    timer.reset();
     timer.start();
     cv::Mat src = input_image;
     cv::Mat mask = cv::Mat::zeros(src.rows, src.cols, CV_8UC1);
@@ -70,6 +71,7 @@ int main(int argc, char** argv) {
     src.copyTo(dest, mask2);
     cv::imshow("baseline_opencv", dest);
 
+    timer.reset();
     timer.start();
     auto maskm = get_rect_mask(src.cols, src.rows, selection);
     grabcut::Grabcut myimpl;
