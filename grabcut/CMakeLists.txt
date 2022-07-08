@@ -7,10 +7,7 @@ add_library(grabcut
         src/learn_gmm.cpp
         )
 
-target_link_libraries(grabcut PRIVATE
-        Eigen3::Eigen
-        maxflow
-        )
+target_link_libraries(grabcut PRIVATE Eigen3::Eigen)
 target_compile_definitions(grabcut PUBLIC GRABCUT_VERSION="${PROJECT_VERSION}")
 target_include_directories(grabcut PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>

@@ -1,6 +1,5 @@
 #include <vector>
 #include <memory>
-#include <graph.h>
 
 #include <grabcut/segmentation_data.h>
 #include <quantization/quantization_model.hpp>
@@ -172,9 +171,6 @@ bool FgBgGraphCut::run(SegmentationData &segdata) {
     graph->maxFlow();
 
     int changed_pixels(0);
-
-    static_assert((int)Graph::SOURCE == (int)Trimap::Background);
-    static_assert((int)Graph::SINK == (int)Trimap::Foreground);
 
     auto out = segdata.segmap.data();
     auto node_id = impl_->nodes.data();
