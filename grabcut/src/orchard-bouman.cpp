@@ -173,7 +173,6 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
 
     result.strongest_k[0] = fg_id;
     result.strongest_k[1] = bg_id;
-    result.component_map = std::move(gmm_component_map);
 
     auto& final_fg_gmm = result.gmm[0];
     auto& final_bg_gmm = result.gmm[1];

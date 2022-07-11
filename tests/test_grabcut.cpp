@@ -50,12 +50,6 @@ TEST_CASE("Test grabcut implementation") {
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
             stbi_write_png("grab_1.png", width, height, 4, rgba.data(), width * 4);
-            res_mask = grabcut.get_component_map();
-            CHECK_EQ(res_mask.size(), width * height);
-            auto v = *std::max_element(res_mask.begin(), res_mask.end());
-            CHECK_LE(v, 5);
-            for (auto& m : res_mask) m *= 255 / 5;
-            stbi_write_png("comp_1.png", width, height, 1, res_mask.data(), width);
         }
 
         SUBCASE("Run 2 step") {
@@ -63,12 +57,6 @@ TEST_CASE("Test grabcut implementation") {
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
             stbi_write_png("grab_2.png", width, height, 4, rgba.data(), width * 4);
-            res_mask = grabcut.get_component_map();
-            CHECK_EQ(res_mask.size(), width * height);
-            auto v = *std::max_element(res_mask.begin(), res_mask.end());
-            CHECK_LE(v, 5);
-            for (auto& m : res_mask) m *= 255 / 5;
-            stbi_write_png("comp_2.png", width, height, 1, res_mask.data(), width);
         }
 
         constexpr bool run_more = false;
@@ -78,12 +66,6 @@ TEST_CASE("Test grabcut implementation") {
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
             stbi_write_png("grab_5.png", width, height, 4, rgba.data(), width * 4);
-            res_mask = grabcut.get_component_map();
-            CHECK_EQ(res_mask.size(), width * height);
-            auto v = *std::max_element(res_mask.begin(), res_mask.end());
-            CHECK_LE(v, 5);
-            for (auto& m : res_mask) m *= 255 / 5;
-            stbi_write_png("comp_5.png", width, height, 1, res_mask.data(), width);
         }
 
         SUBCASE("Run 10 steps") {
@@ -91,12 +73,6 @@ TEST_CASE("Test grabcut implementation") {
             rgba = grabcut.get_result();
             CHECK_EQ(rgba.size(), width * height * 4);
             stbi_write_png("grab_10.png", width, height, 4, rgba.data(), width * 4);
-            res_mask = grabcut.get_component_map();
-            CHECK_EQ(res_mask.size(), width * height);
-            auto v = *std::max_element(res_mask.begin(), res_mask.end());
-            CHECK_LE(v, 5);
-            for (auto& m : res_mask) m *= 255 / 5;
-            stbi_write_png("comp_10.png", width, height, 1, res_mask.data(), width);
         }
 
         } // run more

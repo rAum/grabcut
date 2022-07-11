@@ -13,23 +13,17 @@ void learn(QuantizationModel& model, const grabcut::SegmentationData& segdata, c
     auto& fg = model.gmm[0];
     auto& bg = model.gmm[1];
 
-    auto col = colors;
-    auto mask = segdata.segmap.data();
-    const auto end = model.component_map.data() + model.component_map.size();
-    for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
-        Eigen::Vector3d color(col[0], col[1], col[2]);
-        *component = *mask == Trimap::Background? bg.strongest_k(color) : fg.strongest_k(color);
-    }
-
     std::vector<gmm::MeanCovariancePrecompute<double, 3>> fg_gmm, bg_gmm;
     fg_gmm.resize(fg.size());
     bg_gmm.resize(bg.size());
-    mask = segdata.segmap.data();
-    col = colors;
-    for (auto component = model.component_map.data(); component != end; ++component, ++mask, col += 3) {
+    auto col = colors;
+    const auto end = segdata.segmap.data() + segdata.segmap.size();
+    for (auto mask = segdata.segmap.data(); mask != end; ++mask, col += 3) {
         Eigen::Vector3d color(col[0], col[1], col[2]);
-        auto& mixture = *mask == Trimap::Background? bg_gmm : fg_gmm;
-        mixture[*component].add(color);
+        const bool is_bg = *mask == Trimap::Background;
+        const auto k = is_bg? bg.strongest_k(color) : fg.strongest_k(color);
+        auto& mixture = is_bg? bg_gmm : fg_gmm;
+        mixture[k].add(color);
     }
 
     size_t total_fg_size = 0;
