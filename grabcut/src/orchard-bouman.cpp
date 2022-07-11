@@ -122,7 +122,6 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     fg_gmm.emplace_back();
     bg_gmm.emplace_back();
 
-    const int total_values = shape.width * shape.height * shape.channels;
     const std::uint8_t* curr = data;
     const std::uint8_t* mask_curr = mask_data;
     const std::uint8_t* end = data + (shape.width * shape.height * shape.channels);
