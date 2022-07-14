@@ -21,6 +21,8 @@ set_property(TARGET grabcut PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 
 add_library(grabcut::grabcut ALIAS grabcut)
 
+enable_project_settings(grabcut)
+
 option(INSTALL_GRABCUT_LIB "If set, install is enabled for grabcut library" OFF)
 if (INSTALL_GRABCUT_LIB)
     install(TARGETS grabcut

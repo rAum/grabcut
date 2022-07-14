@@ -19,6 +19,7 @@ struct DynamicGaussianComponent {
     gmm::MeanCovariancePrecompute<double, 3> data;
     gmm::GaussianModel<double, 3> gaussian;
 
+    [[nodiscard]]
     std::size_t size() const noexcept { return data.size(); }
 
     DynamicGaussianComponent& clear_data() noexcept {
@@ -36,6 +37,7 @@ struct DynamicGaussianComponent {
         return *this;
     }
 
+    [[nodiscard]]
     auto max_eigenvalue() const noexcept {
         return gaussian.eigenvalues[2];
     }
@@ -59,19 +61,14 @@ void split_biggest_gaussian(const uint8_t *data, const grabcut::Shape &shape, co
     const uint8_t* end = data + (shape.width * shape.height * shape.channels);
     uint8_t* gmm_c = gmm_component_map.data();
 
-    auto total_fg(0);
-    for (auto& fg : fg_gmm) {
-        total_fg += fg.size();
+    std::size_t total_fg(0);
+    for (auto& gaussian : fg_gmm) {
+        total_fg += gaussian.size();
     }
 
-    auto total_bg(0);
-    for (auto& bg : bg_gmm) {
-        total_bg += bg.size();
-    }
-
-    bool valid = total_fg + total_bg == shape.size();
-    if (!valid) {
-        assert(valid);
+    std::size_t total_bg(0);
+    for (auto& gaussian : bg_gmm) {
+        total_bg += gaussian.size();
     }
 
     if (k != fg_id) {
@@ -122,7 +119,6 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     fg_gmm.emplace_back();
     bg_gmm.emplace_back();
 
-    const int total_values = shape.width * shape.height * shape.channels;
     const std::uint8_t* curr = data;
     const std::uint8_t* mask_curr = mask_data;
     const std::uint8_t* end = data + (shape.width * shape.height * shape.channels);
@@ -137,7 +133,7 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
                 fg_gmm.front().data.add(color);
             default:
                 break;
-        };
+        }
         curr += 3;
         ++mask_curr;
     }
@@ -160,7 +156,7 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
     // TODO: probably can be rewritten to be more effective
     for (int k = 0; k < max_k; ++k) {
         split_biggest_gaussian(data, shape, mask_data, fg_gmm, bg_gmm, gmm_component_map, fg_id, bg_id, k);
-        // find the highest variance (highest eigenvalue) component to split more
+        // find the highest variance (the highest eigenvalue) component to split more
         for (int i=0; i<k; ++i) {
             if (fg_gmm[fg_id].max_eigenvalue() < fg_gmm[i].max_eigenvalue()) {
                 fg_id = i;
@@ -170,10 +166,6 @@ void quantize(const std::uint8_t* data, const grabcut::Shape& shape, const std::
             }
         }
     }
-
-    result.strongest_k[0] = fg_id;
-    result.strongest_k[1] = bg_id;
-    result.component_map = std::move(gmm_component_map);
 
     auto& final_fg_gmm = result.gmm[0];
     auto& final_bg_gmm = result.gmm[1];

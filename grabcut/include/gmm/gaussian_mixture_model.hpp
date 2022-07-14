@@ -1,17 +1,12 @@
+#pragma once
 #ifndef GRABCUT_GAUSSIAN_MIXTURE_MODEL_HPP
 #define GRABCUT_GAUSSIAN_MIXTURE_MODEL_HPP
-#pragma once
 
 #include "gaussian_model.hpp"
 
 #include <vector>
 
 namespace gmm {
-
-template<class T>
-constexpr T clamp(T a, T min, T max) noexcept {
-    return  a < min? min : (a > max? max : a);
-}
 
 /***
  * Models mixture of gaussians (GMM)

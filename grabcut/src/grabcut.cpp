@@ -64,14 +64,10 @@ Grabcut& Grabcut::run(int steps) {
 
 const std::vector<std::uint8_t>& Grabcut::get_mask() const {
     return impl_->segmentation.segmap;
-};
+}
 
 std::vector<std::uint8_t> Grabcut::get_result() const {
     return impl_->segmentation.make_rgba(impl_->image, 0, 255);
-}
-
-std::vector<std::uint8_t> Grabcut::get_component_map() const {
-    return impl_->color_model.component_map;
 }
 
 }  // namespace grabcut
