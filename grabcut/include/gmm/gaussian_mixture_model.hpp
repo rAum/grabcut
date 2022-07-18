@@ -69,15 +69,12 @@ public:
     [[nodiscard]]
     T probability(const typename GaussianT::VecT & vec) const noexcept {
         T total_probability(0);
-        T total_weights(0);
         for (const auto& gaussian : mixture_) {
             if (gaussian.a_priori_weight > 0) {
                 total_probability += gaussian.a_priori_weight * gaussian.probability_density(vec);
-                total_weights += gaussian.a_priori_weight;
             }
         }
-        if (total_weights == 0) return 0;
-        return total_probability / total_weights;
+        return total_probability;
     }
 
     [[nodiscard]]
