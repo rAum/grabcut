@@ -8,18 +8,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include <grabcut/grabcut.h>
-
-std::unique_ptr<std::uint8_t[]> get_rect_mask(int width, int height, cv::Rect s) {
-    std::unique_ptr<std::uint8_t[]> mask(new std::uint8_t[width * height]);
-    memset(mask.get(), 0, width * height * sizeof(std::uint8_t));
-    for (int i = s.y; i < s.y+s.height ; ++i) {
-        for (int j = s.x; j < s.x+s.width; ++j) {
-            mask[i * width + j] = 1;
-        }
-    }
-    return mask;
-}
+#include <grabcut/opencv/grabcut.h>
 
 int main(int argc, char** argv) {
     if (argc <= 1) {
@@ -43,6 +32,7 @@ int main(int argc, char** argv) {
     // for quick eval
     if (std::string("../../tests/data/flower1.jpg") == argv[1]) {
         selection = { 68, 23, 539, 510};
+        cv::imshow(window_name, input_image);
     } else {
         do {
             selection = cv::selectROI(window_name, input_image);
@@ -73,17 +63,13 @@ int main(int argc, char** argv) {
 
     timer.reset();
     timer.start();
-    auto maskm = get_rect_mask(src.cols, src.rows, selection);
-    grabcut::Grabcut myimpl;
-    myimpl.init(src.data, maskm.get(), src.cols, src.rows);
-    myimpl.run(steps);
+    cv::Mat src_mask;
+    grabcut::run_grabcut(src, selection, src_mask, steps);
     timer.stop();
     std::cout << "Time: " << timer.getTimeSec() << std::endl;
-    auto res = myimpl.get_mask();
 
-    cv::Mat cv_res{src.rows, src.cols, CV_8UC1, res.data() };
     cv::Mat dest2;
-    src.copyTo(dest2, cv_res);
+    src.copyTo(dest2, src_mask);
     cv::imshow("this_implementation", dest2);
 
     cv::waitKey();
