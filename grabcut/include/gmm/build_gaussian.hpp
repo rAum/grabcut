@@ -49,14 +49,12 @@ template<class T, int DIM>
 void build_gaussian(gmm::GaussianModelLean<T, DIM> &gaussian, const gmm::MeanCovariancePrecompute<T, DIM>& mean_cov, unsigned total_samples) noexcept {
     static_assert(DIM > 0, "Dimension size must be at least 1");
 
-    gaussian.a_priori_weight = 0;
+    double a_priori_weight(0);
     if (mean_cov.size() != 0) {
-        gaussian.a_priori_weight = mean_cov.size() / decltype(gaussian.a_priori_weight)(total_samples);
+        a_priori_weight = mean_cov.size() / decltype(a_priori_weight)(total_samples);
     }
-    gaussian.mean = mean_cov.get_mean();
     auto covariance = mean_cov.get_covariance();
-    gaussian.determinant = covariance.determinant();
-    gaussian.inverse = covariance.inverse();
+    gaussian = gmm::GaussianModelLean<T, DIM>{covariance.inverse(), mean_cov.get_mean(), covariance.determinant(), a_priori_weight};
 }
 
 }  // namespace gmm
