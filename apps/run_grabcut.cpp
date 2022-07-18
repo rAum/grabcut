@@ -63,9 +63,8 @@ int main(int argc, char** argv) {
 
     timer.reset();
     timer.start();
-    cv::Mat src_mask = cv::Mat::zeros(src.rows, src.cols, CV_8UC1);
-    cv::rectangle(src_mask, selection, cv::Scalar(1), -1);
-    grabcut::run_grabcut(src, src_mask, steps);
+    cv::Mat src_mask;
+    grabcut::run_grabcut(src, selection, src_mask, steps);
     timer.stop();
     std::cout << "Time: " << timer.getTimeSec() << std::endl;
 
