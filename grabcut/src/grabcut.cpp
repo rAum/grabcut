@@ -67,7 +67,8 @@ const std::vector<std::uint8_t>& Grabcut::get_mask() const {
 }
 
 std::vector<std::uint8_t> Grabcut::get_result() const {
-    return impl_->segmentation.make_rgba(impl_->image, 0, 255);
+    return impl_->segmentation.make_rgb(impl_->image);
+    //return impl_->segmentation.make_rgba(impl_->image, 0, 255);
 }
 
 }  // namespace grabcut

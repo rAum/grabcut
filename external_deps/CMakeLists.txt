@@ -1,4 +1,4 @@
-# This is a place to include all external libraries
+# This is a place to include all external librariesBUILD_GRABCUT_APPS
 # as code dependencies
 
 if (BUILD_TESTS)
@@ -9,3 +9,7 @@ endif()
 add_subdirectory(stb)
 add_subdirectory(corrade_lean)
 add_subdirectory(eigen)
+
+if (BUILD_PYGRABCUT)
+    add_subdirectory(pybind11)
+endif()

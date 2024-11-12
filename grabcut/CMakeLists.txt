@@ -23,6 +23,9 @@ add_library(grabcut::grabcut ALIAS grabcut)
 
 enable_project_settings(grabcut)
 target_compile_options(grabcut PRIVATE "-O3" "-ffast-math")
+if (BUILD_PYGRABCUT)
+    target_compile_options(grabcut PRIVATE "-fPIC")
+endif()
 
 option(INSTALL_GRABCUT_LIB "If set, install is enabled for grabcut library" OFF)
 if (INSTALL_GRABCUT_LIB)

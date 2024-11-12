@@ -24,6 +24,7 @@ struct SegmentationData {
 
     // for temporary debug
     std::vector<std::uint8_t> make_rgba(const std::uint8_t* color, std::uint8_t novalue = 128, std::uint8_t value=255) const;
+    std::vector<std::uint8_t> make_rgb(const std::uint8_t* color) const;
 };
 
 }

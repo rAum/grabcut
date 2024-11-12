@@ -32,4 +32,14 @@ std::vector<std::uint8_t> SegmentationData::make_rgba(const std::uint8_t* color,
     return result;
 }
 
+std::vector<std::uint8_t> SegmentationData::make_rgb(const std::uint8_t* color) const {
+    std::vector<std::uint8_t> result(segmap.size() * 3);
+    for (auto out = result.data(); out != result.data() + result.size(); out += 3) {
+        out[0] = *(color++); // red
+        out[1] = *(color++); // green
+        out[2] = *(color++); // blue
+    }
+    return result;
+}
+
 }  // namespace grabcut
